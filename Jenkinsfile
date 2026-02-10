@@ -1,20 +1,19 @@
 // ===========================================
-// MediTrack - Jenkins CI/CD Pipeline
+// MediTrack - Jenkins CI/CD Pipeline (Windows)
 // ===========================================
 
 pipeline {
     agent any
 
     environment {
-        // Docker Hub credentials (configure in Jenkins credentials)
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        // Docker Hub username (update this to your username)
         DOCKER_USERNAME = 'dinraj'
         
         // Image names
         BACKEND_IMAGE = "${DOCKER_USERNAME}/meditrack-backend"
         FRONTEND_IMAGE = "${DOCKER_USERNAME}/meditrack-frontend"
         
-        // Version tag (uses build number or git commit)
+        // Version tag (uses build number)
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
@@ -31,12 +30,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                script {
-                    env.GIT_COMMIT_SHORT = sh(
-                        script: "git rev-parse --short HEAD",
-                        returnStdout: true
-                    ).trim()
-                }
             }
         }
 
@@ -46,10 +39,8 @@ pipeline {
         stage('Backend - Install & Test') {
             steps {
                 dir('backend') {
-                    sh 'npm ci'
-                    // Uncomment when tests are added
-                    // sh 'npm test'
-                    sh 'npm run lint || true'
+                    bat 'npm ci'
+                    echo 'Backend installed successfully'
                 }
             }
         }
@@ -57,10 +48,8 @@ pipeline {
         stage('Frontend - Install & Test') {
             steps {
                 dir('frontend') {
-                    sh 'npm ci'
-                    // Uncomment when tests are added
-                    // sh 'npm test'
-                    sh 'npm run lint || true'
+                    bat 'npm ci'
+                    bat 'npm run lint || exit 0'
                 }
             }
         }
@@ -73,20 +62,16 @@ pipeline {
                 stage('Build Backend') {
                     steps {
                         dir('backend') {
-                            sh """
-                                docker build -t ${BACKEND_IMAGE}:${IMAGE_TAG} .
-                                docker tag ${BACKEND_IMAGE}:${IMAGE_TAG} ${BACKEND_IMAGE}:latest
-                            """
+                            bat "docker build -t %BACKEND_IMAGE%:%IMAGE_TAG% ."
+                            bat "docker tag %BACKEND_IMAGE%:%IMAGE_TAG% %BACKEND_IMAGE%:latest"
                         }
                     }
                 }
                 stage('Build Frontend') {
                     steps {
                         dir('frontend') {
-                            sh """
-                                docker build -t ${FRONTEND_IMAGE}:${IMAGE_TAG} .
-                                docker tag ${FRONTEND_IMAGE}:${IMAGE_TAG} ${FRONTEND_IMAGE}:latest
-                            """
+                            bat "docker build -t %FRONTEND_IMAGE%:%IMAGE_TAG% ."
+                            bat "docker tag %FRONTEND_IMAGE%:%IMAGE_TAG% %FRONTEND_IMAGE%:latest"
                         }
                     }
                 }
@@ -101,18 +86,18 @@ pipeline {
                 branch 'main'
             }
             steps {
-                sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
-                sh """
-                    docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
-                    docker push ${BACKEND_IMAGE}:latest
-                    docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
-                    docker push ${FRONTEND_IMAGE}:latest
-                """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat "docker push %BACKEND_IMAGE%:%IMAGE_TAG%"
+                    bat "docker push %BACKEND_IMAGE%:latest"
+                    bat "docker push %FRONTEND_IMAGE%:%IMAGE_TAG%"
+                    bat "docker push %FRONTEND_IMAGE%:latest"
+                }
             }
         }
 
         // ===========================================
-        // Stage 5: Deploy (Optional - for staging/prod)
+        // Stage 5: Deploy (Optional)
         // ===========================================
         stage('Deploy to Staging') {
             when {
@@ -120,19 +105,6 @@ pipeline {
             }
             steps {
                 echo 'Deploying to staging environment...'
-                // Uncomment and configure for your deployment
-                // sh 'docker-compose -f docker-compose.staging.yml up -d'
-                
-                // Or deploy to a remote server via SSH
-                // sshagent(['staging-server-ssh']) {
-                //     sh '''
-                //         ssh user@staging-server "
-                //             cd /opt/meditrack &&
-                //             docker-compose pull &&
-                //             docker-compose up -d
-                //         "
-                //     '''
-                // }
             }
         }
     }
@@ -142,21 +114,16 @@ pipeline {
     // ===========================================
     post {
         always {
-            // Clean up Docker images to save space
-            sh 'docker system prune -f || true'
-            
-            // Clean workspace
-            cleanWs()
+            node('') {
+                bat 'docker system prune -f || exit 0'
+                cleanWs()
+            }
         }
         success {
-            echo '✅ Pipeline completed successfully!'
-            // Uncomment for Slack notification
-            // slackSend(color: 'good', message: "Build #${BUILD_NUMBER} succeeded for MediTrack")
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed!'
-            // Uncomment for Slack notification
-            // slackSend(color: 'danger', message: "Build #${BUILD_NUMBER} failed for MediTrack")
+            echo 'Pipeline failed!'
         }
     }
 }
