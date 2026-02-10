@@ -1,0 +1,101 @@
+// ===========================================
+// MediTrack - Jenkins CI/CD Pipeline (Windows)
+// ===========================================
+// Use this file if Jenkins runs on Windows
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_USERNAME = 'dinraj910'
+        BACKEND_IMAGE = "${DOCKER_USERNAME}/meditrack-backend"
+        FRONTEND_IMAGE = "${DOCKER_USERNAME}/meditrack-frontend"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Backend - Install & Test') {
+            steps {
+                dir('backend') {
+                    bat 'npm ci'
+                    bat 'npm run lint || exit 0'
+                }
+            }
+        }
+
+        stage('Frontend - Install & Test') {
+            steps {
+                dir('frontend') {
+                    bat 'npm ci'
+                    bat 'npm run lint || exit 0'
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            parallel {
+                stage('Build Backend') {
+                    steps {
+                        dir('backend') {
+                            bat """
+                                docker build -t %BACKEND_IMAGE%:%IMAGE_TAG% .
+                                docker tag %BACKEND_IMAGE%:%IMAGE_TAG% %BACKEND_IMAGE%:latest
+                            """
+                        }
+                    }
+                }
+                stage('Build Frontend') {
+                    steps {
+                        dir('frontend') {
+                            bat """
+                                docker build -t %FRONTEND_IMAGE%:%IMAGE_TAG% .
+                                docker tag %FRONTEND_IMAGE%:%IMAGE_TAG% %FRONTEND_IMAGE%:latest
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            when {
+                branch 'main'
+            }
+            steps {
+                bat 'docker login -u %DOCKER_HUB_CREDENTIALS_USR% -p %DOCKER_HUB_CREDENTIALS_PSW%'
+                bat """
+                    docker push %BACKEND_IMAGE%:%IMAGE_TAG%
+                    docker push %BACKEND_IMAGE%:latest
+                    docker push %FRONTEND_IMAGE%:%IMAGE_TAG%
+                    docker push %FRONTEND_IMAGE%:latest
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            bat 'docker system prune -f || exit 0'
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
