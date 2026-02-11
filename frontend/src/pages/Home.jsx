@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Home() {
+  const { user, logout, loading } = useContext(AuthContext);
   const features = [
     {
       icon: "💊",
@@ -55,25 +58,138 @@ export default function Home() {
           MediTrack
         </motion.h1>
 
-        <div className="flex gap-3 md:gap-6 text-sm md:text-base font-medium">
-          <Link 
-            to="/login" 
-            className="text-slate-300 hover:text-blue-400 transition px-3 py-2"
-          >
-            Login
-          </Link>
-
-          <Link
-            to="/register"
-            className="bg-blue-600 text-white px-4 py-2 md:px-5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
-          >
-            Get Started
-          </Link>
+        <div className="flex gap-3 md:gap-6 text-sm md:text-base font-medium items-center">
+          {loading ? (
+            <div className="w-8 h-8 rounded-full bg-slate-700 animate-pulse"></div>
+          ) : user ? (
+            <>
+              {/* User Profile */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
+                  {user.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <span className="hidden md:block text-slate-200 font-medium">
+                  {user.name}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="text-slate-400 hover:text-red-400 transition px-3 py-2"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link 
+                to="/login" 
+                className="text-slate-300 hover:text-blue-400 transition px-3 py-2"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="bg-blue-600 text-white px-4 py-2 md:px-5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="px-4 py-12 md:px-8 lg:px-16 md:py-20 lg:py-24">
+      {/* DASHBOARD SECTION - Only for logged in users */}
+      {user && (
+        <section className="px-4 py-8 md:px-8 lg:px-16 md:py-12">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 p-6 md:p-8"
+            >
+              {/* Welcome Header */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-100">
+                    Welcome back, {user.name?.split(' ')[0]}! 👋
+                  </h2>
+                  <p className="text-slate-400 mt-1">Here's your health overview for today</p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  All systems healthy
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                  <div className="text-3xl mb-2">💊</div>
+                  <div className="text-2xl font-bold text-blue-400">0</div>
+                  <div className="text-xs text-slate-400">Medicines Today</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                  <div className="text-3xl mb-2">✅</div>
+                  <div className="text-2xl font-bold text-green-400">0%</div>
+                  <div className="text-xs text-slate-400">Adherence Rate</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                  <div className="text-3xl mb-2">📁</div>
+                  <div className="text-2xl font-bold text-purple-400">0</div>
+                  <div className="text-xs text-slate-400">Medical Records</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                  <div className="text-3xl mb-2">🔔</div>
+                  <div className="text-2xl font-bold text-orange-400">0</div>
+                  <div className="text-xs text-slate-400">Reminders Set</div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-medium transition">
+                  <span>➕</span> Add Medicine
+                </button>
+                <button className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-xl font-medium transition">
+                  <span>📤</span> Upload Record
+                </button>
+                <button className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-xl font-medium transition">
+                  <span>📊</span> View Analytics
+                </button>
+                <button className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-xl font-medium transition">
+                  <span>⚙️</span> Settings
+                </button>
+              </div>
+
+              {/* User Info Card */}
+              <div className="mt-8 bg-slate-800/30 rounded-xl p-4 border border-slate-700/50">
+                <h3 className="text-sm font-semibold text-slate-400 mb-3">YOUR PROFILE</h3>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500">📧</span>
+                    <span className="text-slate-300">{user.email}</span>
+                  </div>
+                  {user.bloodGroup && user.bloodGroup !== 'unknown' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500">🩸</span>
+                      <span className="text-slate-300">Blood: {user.bloodGroup}</span>
+                    </div>
+                  )}
+                  {user.age && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500">🎂</span>
+                      <span className="text-slate-300">Age: {user.age}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* HERO SECTION - Only for guests */}
+      {!user && <section className="px-4 py-12 md:px-8 lg:px-16 md:py-20 lg:py-24">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -134,7 +250,7 @@ export default function Home() {
             </motion.div>
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* STATS SECTION */}
       <section className="px-4 py-12 md:px-8 lg:px-16 border-y border-slate-800 bg-slate-900/50">
@@ -198,8 +314,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="px-4 py-12 md:px-8 lg:px-16 md:py-20">
+      {/* CTA SECTION - Only for guests */}
+      {!user && <section className="px-4 py-12 md:px-8 lg:px-16 md:py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -227,7 +343,7 @@ export default function Home() {
             </Link>
           </div>
         </motion.div>
-      </section>
+      </section>}
 
       {/* FOOTER */}
       <footer className="px-4 py-8 md:px-8 lg:px-16 md:py-12 border-t border-slate-800 bg-slate-900/50">

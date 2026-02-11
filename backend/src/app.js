@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -33,6 +34,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Cookie parser
+app.use(cookieParser());
 
 // Body parsers
 app.use(express.json({ limit: "10mb" }));

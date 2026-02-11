@@ -2,6 +2,14 @@ import User from "../models/User.js";
 import { generateToken } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
 
+// Cookie options
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
 /**
  * @desc    Register new user
  * @route   POST /api/auth/register
@@ -31,6 +39,9 @@ export const register = asyncHandler(async (req, res) => {
 
   // Generate token
   const token = generateToken(user._id);
+
+  // Set cookie
+  res.cookie("token", token, cookieOptions);
 
   res.status(201).json({
     success: true,
@@ -88,6 +99,9 @@ export const login = asyncHandler(async (req, res) => {
   // Generate token
   const token = generateToken(user._id);
 
+  // Set cookie
+  res.cookie("token", token, cookieOptions);
+
   res.status(200).json({
     success: true,
     message: "Login successful!",
@@ -104,8 +118,12 @@ export const login = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const logout = asyncHandler(async (req, res) => {
-  // Token invalidation would require a blacklist in production
-  // For now, client will remove token from storage
+  // Clear cookie
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
   res.status(200).json({
     success: true,
     message: "Logged out successfully",
