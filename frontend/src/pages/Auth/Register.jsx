@@ -1,24 +1,40 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
+import { AuthContext } from "../../context/AuthContext";
+import { registerUser } from "../../services/authService";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
     age: "",
     bloodGroup: "O+"
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Register:", formData);
+    setError("");
+    setLoading(true);
+    try {
+      const data = await registerUser(formData);
+      login(data);
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +54,13 @@ export default function Register() {
           </p>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Register Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
@@ -45,8 +68,8 @@ export default function Register() {
             <label className="block mb-1.5 text-sm font-medium text-slate-300">Full Name</label>
             <input 
               type="text"
-              name="fullName"
-              value={formData.fullName}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full px-4 py-3 md:py-3.5 rounded-xl bg-slate-800 border border-slate-700 
               text-slate-100 placeholder-slate-500
@@ -154,10 +177,11 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-3.5 rounded-xl 
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 md:py-3.5 rounded-xl 
             font-semibold transition shadow-lg shadow-blue-600/30 transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
