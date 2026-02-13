@@ -8,18 +8,8 @@ import Loader from '../components/ui/Loader';
 
 const DashboardLayout = ({ children, title, fullWidth = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
-
-  // Check authentication
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    setIsLoading(false);
-  }, [isAuthenticated, navigate]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -43,8 +33,8 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [sidebarOpen]);
 
-  // Show loading spinner during initial load
-  if (isLoading) {
+  // Show loading spinner during auth check
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <Loader 

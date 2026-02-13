@@ -13,7 +13,7 @@ import { cn } from '../../utils/cn';
 const bottomNavigation = [
   { name: 'Home', href: '/dashboard', icon: Home },
   { name: 'Pills', href: '/medicines', icon: Pill },
-  { name: 'Add', href: '/add', icon: Plus, isCenter: true },
+  { name: 'Add', href: '/medicines/add', icon: Plus, isCenter: true },
   { name: 'Stats', href: '/analytics', icon: BarChart3 },
   { name: 'Profile', href: '/profile', icon: User }
 ];

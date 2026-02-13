@@ -26,7 +26,7 @@ export default function Login() {
     try {
       const data = await loginUser(formData);
       login(data);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
