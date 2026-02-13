@@ -21,7 +21,7 @@ export default function AuthProvider({ children }) {
           const data = await getCurrentUser();
           setUser(data.user);
         }
-      } catch (error) {
+      } catch {
         // Token invalid or expired - clear local storage
         setUser(null);
         setToken(null);
@@ -31,7 +31,7 @@ export default function AuthProvider({ children }) {
       }
     };
     checkAuth();
-  }, []);
+  }, [token]);
 
   const login = (data) => {
     setUser(data.user);
@@ -44,7 +44,7 @@ export default function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await logoutUser();
-    } catch (error) {
+    } catch {
       // Ignore logout errors
     }
     setUser(null);
