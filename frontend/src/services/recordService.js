@@ -2,7 +2,7 @@ import api from './api';
 
 // Get all medical records
 export const getRecords = async (params = {}) => {
-  const response = await api.get('/records', { params });
+  const response = await api.get('/records/all', { params });
   return response.data;
 };
 
@@ -14,7 +14,7 @@ export const getRecord = async (id) => {
 
 // Upload a new medical record
 export const uploadRecord = async (formData) => {
-  const response = await api.post('/records', formData, {
+  const response = await api.post('/records/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -36,7 +36,13 @@ export const deleteRecord = async (id) => {
 
 // Get records by type
 export const getRecordsByType = async (type) => {
-  const response = await api.get(`/records?type=${type}`);
+  const response = await api.get(`/records/type/${type}`);
+  return response.data;
+};
+
+// Toggle record importance
+export const toggleImportant = async (id) => {
+  const response = await api.patch(`/records/${id}/important`);
   return response.data;
 };
 
@@ -55,5 +61,6 @@ export default {
   updateRecord,
   deleteRecord,
   getRecordsByType,
+  toggleImportant,
   downloadRecord
 };
