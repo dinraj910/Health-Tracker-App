@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Check, 
-  X, 
-  Clock, 
+import {
+  Check,
+  X,
+  Clock,
   Pill,
   AlertCircle,
   ChevronLeft,
@@ -25,7 +25,7 @@ const Today = () => {
     try {
       setLoading(true);
       const data = await getTodayMedicines(selectedDate.toISOString().split('T')[0]);
-      setMedicines(data.medicines || []);
+      setMedicines(data.data?.medicines || data.medicines || []);
     } catch (error) {
       console.error('Error fetching medicines:', error);
     } finally {
@@ -40,15 +40,14 @@ const Today = () => {
   const handleLogMedicine = async (medicineId, status) => {
     try {
       setActionLoading(medicineId);
-      await logMedicine({
-        medicineId,
-        date: selectedDate.toISOString().split('T')[0],
-        status
+      await logMedicine(medicineId, {
+        status,
+        timing: new Date().toTimeString().slice(0, 5)
       });
-      
+
       // Update local state
-      setMedicines(medicines.map(m => 
-        m._id === medicineId 
+      setMedicines(medicines.map(m =>
+        m._id === medicineId
           ? { ...m, todayStatus: status }
           : m
       ));
@@ -79,14 +78,14 @@ const Today = () => {
 
   const getTimeStatus = (time) => {
     if (!isToday) return 'past';
-    
+
     const now = new Date();
     const [hours, minutes] = time.split(':');
     const medicineTime = new Date();
     medicineTime.setHours(parseInt(hours), parseInt(minutes), 0);
-    
+
     const diffMinutes = (medicineTime - now) / (1000 * 60);
-    
+
     if (diffMinutes < -30) return 'past';
     if (diffMinutes <= 30) return 'now';
     return 'upcoming';
@@ -99,8 +98,8 @@ const Today = () => {
     pending: medicines.filter(m => !m.todayStatus).length
   };
 
-  const adherenceRate = stats.total > 0 
-    ? Math.round((stats.taken / stats.total) * 100) 
+  const adherenceRate = stats.total > 0
+    ? Math.round((stats.taken / stats.total) * 100)
     : 0;
 
   return (
@@ -115,12 +114,12 @@ const Today = () => {
           >
             <ChevronLeft size={20} />
           </Button>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center gap-2">
               <Calendar size={18} className="text-teal-400" />
               <h2 className="text-lg font-semibold text-white">
-                {isToday ? "Today" : selectedDate.toLocaleDateString('en-US', { 
+                {isToday ? "Today" : selectedDate.toLocaleDateString('en-US', {
                   weekday: 'long',
                   month: 'short',
                   day: 'numeric'
@@ -128,14 +127,14 @@ const Today = () => {
               </h2>
             </div>
             <p className="text-sm text-slate-400">
-              {selectedDate.toLocaleDateString('en-US', { 
+              {selectedDate.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
               })}
             </p>
           </div>
-          
+
           <Button
             variant="ghost"
             size="icon"
@@ -200,7 +199,7 @@ const Today = () => {
             <AnimatePresence>
               {medicines.map((medicine, index) => {
                 const timeStatus = medicine.timings?.[0] ? getTimeStatus(medicine.timings[0]) : 'past';
-                
+
                 return (
                   <motion.div
                     key={medicine._id}
@@ -209,27 +208,25 @@ const Today = () => {
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card 
+                    <Card
                       variant={
                         medicine.todayStatus === 'taken' ? 'teal' :
-                        medicine.todayStatus === 'missed' ? 'default' : 
-                        timeStatus === 'now' ? 'violet' : 'default'
+                          medicine.todayStatus === 'missed' ? 'default' :
+                            timeStatus === 'now' ? 'violet' : 'default'
                       }
-                      className={`relative ${
-                        medicine.todayStatus === 'missed' ? 'opacity-60' : ''
-                      }`}
+                      className={`relative ${medicine.todayStatus === 'missed' ? 'opacity-60' : ''
+                        }`}
                     >
                       <div className="flex items-center gap-4">
                         {/* Icon */}
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                          medicine.todayStatus === 'taken' 
-                            ? 'bg-green-500/20 border border-green-500/30' 
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${medicine.todayStatus === 'taken'
+                            ? 'bg-green-500/20 border border-green-500/30'
                             : medicine.todayStatus === 'missed'
-                            ? 'bg-red-500/20 border border-red-500/30'
-                            : timeStatus === 'now'
-                            ? 'bg-violet-500/20 border border-violet-500/30 animate-pulse'
-                            : 'bg-slate-700 border border-slate-600'
-                        }`}>
+                              ? 'bg-red-500/20 border border-red-500/30'
+                              : timeStatus === 'now'
+                                ? 'bg-violet-500/20 border border-violet-500/30 animate-pulse'
+                                : 'bg-slate-700 border border-slate-600'
+                          }`}>
                           {medicine.todayStatus === 'taken' ? (
                             <Check size={24} className="text-green-400" />
                           ) : medicine.todayStatus === 'missed' ? (
@@ -244,12 +241,11 @@ const Today = () => {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className={`font-semibold ${
-                              medicine.todayStatus === 'missed' 
-                                ? 'text-slate-400 line-through' 
+                            <h3 className={`font-semibold ${medicine.todayStatus === 'missed'
+                                ? 'text-slate-400 line-through'
                                 : 'text-white'
-                            }`}>
-                              {medicine.name}
+                              }`}>
+                              {medicine.medicineName}
                             </h3>
                             {timeStatus === 'now' && !medicine.todayStatus && (
                               <Badge variant="violet" animation="pulse">Due Now</Badge>
@@ -297,7 +293,7 @@ const Today = () => {
                             </Button>
                           </div>
                         ) : (
-                          <Badge 
+                          <Badge
                             variant={medicine.todayStatus === 'taken' ? 'success' : 'danger'}
                             dot
                           >
@@ -338,7 +334,7 @@ const Today = () => {
                     strokeLinecap="round"
                     className="text-teal-500"
                     initial={{ strokeDasharray: '0 251.2' }}
-                    animate={{ 
+                    animate={{
                       strokeDasharray: `${(adherenceRate / 100) * 251.2} 251.2`
                     }}
                     transition={{ duration: 1, ease: 'easeOut' }}

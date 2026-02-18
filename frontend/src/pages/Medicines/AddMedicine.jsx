@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  Pill, 
-  Clock, 
+import {
+  ArrowLeft,
+  Pill,
+  Clock,
   Calendar,
   Plus,
   X,
@@ -19,25 +19,28 @@ const AddMedicine = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [formData, setFormData] = useState({
-    name: '',
+    medicineName: '',
     dosage: '',
-    frequency: 'daily',
+    frequency: 'once-daily',
     timings: [],
     startDate: '',
     endDate: '',
-    notes: '',
-    reminders: true
+    instructions: '',
+    prescribedBy: '',
+    category: 'tablet',
+    remindersEnabled: true
   });
 
   const [newTiming, setNewTiming] = useState('');
   const [errors, setErrors] = useState({});
 
   const frequencyOptions = [
-    { value: 'daily', label: 'Daily' },
+    { value: 'once-daily', label: 'Once Daily' },
+    { value: 'twice-daily', label: 'Twice Daily' },
+    { value: 'thrice-daily', label: 'Three Times' },
     { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
     { value: 'as-needed', label: 'As Needed' }
   ];
 
@@ -49,7 +52,7 @@ const AddMedicine = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -83,19 +86,19 @@ const AddMedicine = () => {
 
   const validate = () => {
     const newErrors = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Medicine name is required';
+
+    if (!formData.medicineName.trim()) {
+      newErrors.medicineName = 'Medicine name is required';
     }
-    
+
     if (!formData.dosage.trim()) {
       newErrors.dosage = 'Dosage is required';
     }
-    
+
     if (formData.timings.length === 0) {
       newErrors.timings = 'At least one timing is required';
     }
-    
+
     if (!formData.startDate) {
       newErrors.startDate = 'Start date is required';
     }
@@ -106,25 +109,27 @@ const AddMedicine = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       await createMedicine({
-        name: formData.name,
+        medicineName: formData.medicineName,
         dosage: formData.dosage,
         frequency: formData.frequency,
         timings: formData.timings,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
-        notes: formData.notes || undefined,
-        reminders: formData.reminders
+        instructions: formData.instructions || undefined,
+        prescribedBy: formData.prescribedBy || undefined,
+        category: formData.category,
+        remindersEnabled: formData.remindersEnabled
       });
-      
-      navigate('/medicines', { 
+
+      navigate('/medicines', {
         state: { message: 'Medicine added successfully!' }
       });
     } catch (err) {
@@ -172,11 +177,11 @@ const AddMedicine = () => {
               {/* Medicine Name */}
               <Input
                 label="Medicine Name"
-                name="name"
+                name="medicineName"
                 placeholder="e.g., Vitamin D, Aspirin"
-                value={formData.name}
+                value={formData.medicineName}
                 onChange={handleChange}
-                error={errors.name}
+                error={errors.medicineName}
                 leftIcon={<Pill size={18} />}
                 required
               />
@@ -203,11 +208,10 @@ const AddMedicine = () => {
                       key={option.value}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, frequency: option.value }))}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                        formData.frequency === option.value
+                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${formData.frequency === option.value
                           ? 'bg-teal-500 text-white'
                           : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
-                      }`}
+                        }`}
                     >
                       {option.label}
                     </button>
@@ -220,7 +224,7 @@ const AddMedicine = () => {
                 <label className="block text-sm font-medium text-slate-200">
                   Timings <span className="text-red-400">*</span>
                 </label>
-                
+
                 {/* Quick Select */}
                 <div className="flex flex-wrap gap-2">
                   {commonTimings.map((time) => (
@@ -229,11 +233,10 @@ const AddMedicine = () => {
                       type="button"
                       onClick={() => addTiming(time)}
                       disabled={formData.timings.includes(time)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
-                        formData.timings.includes(time)
+                      className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${formData.timings.includes(time)
                           ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
                           : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
-                      }`}
+                        }`}
                     >
                       {formatTime(time)}
                     </button>
@@ -310,13 +313,13 @@ const AddMedicine = () => {
               {/* Notes */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-200">
-                  Notes (Optional)
+                  Instructions (Optional)
                 </label>
                 <textarea
-                  name="notes"
-                  value={formData.notes}
+                  name="instructions"
+                  value={formData.instructions}
                   onChange={handleChange}
-                  placeholder="Any special instructions, side effects to watch for, etc."
+                  placeholder="e.g., Take with food, avoid dairy"
                   rows={3}
                   className="w-full px-4 py-3 rounded-2xl bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 />
@@ -331,8 +334,8 @@ const AddMedicine = () => {
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    name="reminders"
-                    checked={formData.reminders}
+                    name="remindersEnabled"
+                    checked={formData.remindersEnabled}
                     onChange={handleChange}
                     className="sr-only peer"
                   />
@@ -347,9 +350,9 @@ const AddMedicine = () => {
                     Cancel
                   </Button>
                 </Link>
-                <Button 
-                  variant="gradient" 
-                  width="full" 
+                <Button
+                  variant="gradient"
+                  width="full"
                   type="submit"
                   loading={loading}
                   leftIcon={<Save size={18} />}

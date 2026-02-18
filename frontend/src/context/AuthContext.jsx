@@ -53,12 +53,18 @@ export default function AuthProvider({ children }) {
     localStorage.clear();
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       token,
       login,
       logout,
+      updateUser,
       loading,
       isAuthenticated: !!user && !!token
     }}>

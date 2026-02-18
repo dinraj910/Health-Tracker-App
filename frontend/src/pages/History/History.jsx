@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar as CalendarIcon, 
-  Check, 
-  X, 
+import {
+  Calendar as CalendarIcon,
+  Check,
+  X,
   Filter,
   ChevronLeft,
   ChevronRight,
@@ -32,14 +32,15 @@ const History = () => {
       setLoading(true);
       const startDate = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
       const endDate = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
-      
+
       const data = await getLogHistory(startDate.toISOString(), endDate.toISOString());
-      setLogs(data.logs || []);
-      
+      const rawLogs = data.data?.logs || data.logs || [];
+      setLogs(rawLogs);
+
       // Calculate stats
-      const total = data.logs?.length || 0;
-      const taken = data.logs?.filter(l => l.status === 'taken').length || 0;
-      const missed = data.logs?.filter(l => l.status === 'missed').length || 0;
+      const total = rawLogs.length;
+      const taken = rawLogs.filter(l => l.status === 'taken').length;
+      const missed = rawLogs.filter(l => l.status === 'missed').length;
       setStats({
         total,
         taken,
@@ -123,15 +124,14 @@ const History = () => {
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  filterStatus === status
-                    ? status === 'taken' 
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${filterStatus === status
+                    ? status === 'taken'
                       ? 'bg-green-500 text-white'
                       : status === 'missed'
-                      ? 'bg-red-500 text-white'
-                      : 'bg-teal-500 text-white'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-teal-500 text-white'
                     : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </button>
@@ -204,7 +204,7 @@ const History = () => {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">No history found</h3>
                 <p className="text-slate-400">
-                  {filterStatus !== 'all' 
+                  {filterStatus !== 'all'
                     ? `No ${filterStatus} medicines for this month`
                     : 'No medicine logs for this month'}
                 </p>
@@ -244,34 +244,32 @@ const History = () => {
                       >
                         <Card variant="default" className="relative">
                           {/* Timeline Dot */}
-                          <div 
-                            className={`absolute -left-[1.85rem] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 ${
-                              log.status === 'taken' 
+                          <div
+                            className={`absolute -left-[1.85rem] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 ${log.status === 'taken'
                                 ? 'bg-green-500 border-green-500'
                                 : 'bg-red-500 border-red-500'
-                            }`}
+                              }`}
                           />
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               {/* Medicine Icon */}
-                              <div 
-                                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                  log.status === 'taken'
+                              <div
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center ${log.status === 'taken'
                                     ? 'bg-green-500/20'
                                     : 'bg-red-500/20'
-                                }`}
+                                  }`}
                               >
-                                <Pill 
-                                  size={24} 
-                                  className={log.status === 'taken' ? 'text-green-400' : 'text-red-400'} 
+                                <Pill
+                                  size={24}
+                                  className={log.status === 'taken' ? 'text-green-400' : 'text-red-400'}
                                 />
                               </div>
 
                               {/* Medicine Info */}
                               <div>
                                 <h4 className="font-semibold text-white">
-                                  {log.medicine?.name || 'Unknown Medicine'}
+                                  {log.medicine?.medicineName || log.medicineId?.medicineName || 'Unknown Medicine'}
                                 </h4>
                                 <div className="flex items-center gap-2 text-sm text-slate-400">
                                   <span>{log.medicine?.dosage}</span>
@@ -291,7 +289,7 @@ const History = () => {
                               </div>
 
                               {/* Status Badge */}
-                              <Badge 
+                              <Badge
                                 variant={log.status === 'taken' ? 'success' : 'error'}
                                 size="md"
                               >
@@ -333,21 +331,20 @@ const History = () => {
                   initial={{ width: 0 }}
                   animate={{ width: `${stats.adherence}%` }}
                   transition={{ duration: 1, ease: 'easeOut' }}
-                  className={`h-full rounded-full ${
-                    stats.adherence >= 80 
-                      ? 'bg-green-500' 
-                      : stats.adherence >= 50 
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
+                  className={`h-full rounded-full ${stats.adherence >= 80
+                      ? 'bg-green-500'
+                      : stats.adherence >= 50
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
+                    }`}
                 />
               </div>
               <p className="text-sm text-slate-400">
-                {stats.adherence >= 80 
-                  ? 'Great job! Keep up the good work!' 
+                {stats.adherence >= 80
+                  ? 'Great job! Keep up the good work!'
                   : stats.adherence >= 50
-                  ? 'You\'re doing okay. Try to be more consistent.'
-                  : 'Room for improvement. Set reminders to help you remember.'}
+                    ? 'You\'re doing okay. Try to be more consistent.'
+                    : 'Room for improvement. Set reminders to help you remember.'}
               </p>
             </div>
           </Card>

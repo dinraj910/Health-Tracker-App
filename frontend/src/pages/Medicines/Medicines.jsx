@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
+import {
+  Plus,
+  Search,
   Filter,
   Pill,
   Clock,
@@ -36,7 +36,7 @@ const Medicines = () => {
     try {
       setLoading(true);
       const data = await getMedicines();
-      setMedicines(data.medicines || []);
+      setMedicines(data.data?.medicines || data.medicines || []);
     } catch (error) {
       console.error('Error fetching medicines:', error);
     } finally {
@@ -51,7 +51,7 @@ const Medicines = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedMedicine) return;
-    
+
     try {
       setDeleteLoading(true);
       await deleteMedicine(selectedMedicine._id);
@@ -66,9 +66,9 @@ const Medicines = () => {
   };
 
   const filteredMedicines = medicines.filter(medicine => {
-    const matchesSearch = medicine.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = medicine.medicineName?.toLowerCase().includes(searchQuery.toLowerCase());
     const isActive = new Date(medicine.endDate) >= new Date() || !medicine.endDate;
-    
+
     if (filter === 'active') return matchesSearch && isActive;
     if (filter === 'completed') return matchesSearch && !isActive;
     return matchesSearch;
@@ -101,7 +101,7 @@ const Medicines = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <div className="flex gap-3 w-full sm:w-auto">
             {/* Filter Tabs */}
             <div className="flex bg-slate-800 rounded-xl p-1">
@@ -109,17 +109,16 @@ const Medicines = () => {
                 <button
                   key={tab}
                   onClick={() => setFilter(tab)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 capitalize ${
-                    filter === tab 
-                      ? 'bg-teal-500 text-white' 
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 capitalize ${filter === tab
+                      ? 'bg-teal-500 text-white'
                       : 'text-slate-400 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-            
+
             <Link to="/medicines/add">
               <Button variant="gradient" leftIcon={<Plus size={18} />}>
                 <span className="hidden sm:inline">Add Medicine</span>
@@ -179,7 +178,7 @@ const Medicines = () => {
 
                     {/* Medicine Info */}
                     <h3 className="text-lg font-semibold text-white mb-1 pr-20">
-                      {medicine.name}
+                      {medicine.medicineName}
                     </h3>
                     <p className="text-slate-400 text-sm mb-4">
                       {medicine.dosage}
@@ -194,8 +193,8 @@ const Medicines = () => {
                       <div className="flex items-center gap-2 text-sm text-slate-300">
                         <Calendar size={16} className="text-slate-500" />
                         <span>
-                          {medicine.startDate 
-                            ? new Date(medicine.startDate).toLocaleDateString() 
+                          {medicine.startDate
+                            ? new Date(medicine.startDate).toLocaleDateString()
                             : 'No start date'}
                           {medicine.endDate && ` - ${new Date(medicine.endDate).toLocaleDateString()}`}
                         </span>
@@ -209,8 +208,8 @@ const Medicines = () => {
                           Edit
                         </Button>
                       </Link>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteClick(medicine)}
                         className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
@@ -264,7 +263,7 @@ const Medicines = () => {
             </div>
             <div>
               <p className="text-slate-300">
-                Are you sure you want to delete <strong className="text-white">{selectedMedicine?.name}</strong>?
+                Are you sure you want to delete <strong className="text-white">{selectedMedicine?.medicineName}</strong>?
               </p>
               <p className="text-sm text-slate-400 mt-2">
                 This action cannot be undone. All logs associated with this medicine will also be deleted.
@@ -276,8 +275,8 @@ const Medicines = () => {
           <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={handleDeleteConfirm}
             loading={deleteLoading}
           >
