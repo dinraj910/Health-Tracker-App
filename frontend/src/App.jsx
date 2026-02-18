@@ -11,12 +11,13 @@ import History from "./pages/History/History";
 import Records from "./pages/Records/Records";
 import Profile from "./pages/Profile/Profile";
 import Analytics from "./pages/Analytics/Analytics";
-import AuthProvider, { useAuth } from "./context/AuthContext";
+import AuthProvider from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -24,18 +25,18 @@ function ProtectedRoute({ children }) {
       </div>
     );
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 }
 
 // Public route wrapper - redirect to dashboard if authenticated
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -43,11 +44,11 @@ function PublicRoute({ children }) {
       </div>
     );
   }
-  
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 }
 
@@ -58,7 +59,7 @@ function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-      
+
       {/* PROTECTED ROUTES */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/medicines" element={<ProtectedRoute><Medicines /></ProtectedRoute>} />
@@ -69,7 +70,7 @@ function AppRoutes() {
       <Route path="/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-      
+
       {/* Catch all - redirect to dashboard or home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

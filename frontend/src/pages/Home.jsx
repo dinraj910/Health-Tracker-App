@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  Pill, 
-  FileText, 
-  BarChart3, 
-  Clock, 
-  Shield, 
+import {
+  Pill,
+  FileText,
+  BarChart3,
+  Clock,
+  Shield,
   Users,
   ArrowRight,
   Sparkles,
@@ -14,11 +14,11 @@ import {
   Calendar,
   Upload
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Home() {
   const { user, logout, loading } = useAuth();
-  
+
   const features = [
     {
       icon: Pill,
@@ -76,7 +76,7 @@ export default function Home() {
 
       {/* NAVBAR */}
       <nav className="relative flex justify-between items-center px-4 py-4 md:px-8 lg:px-16 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-2"
@@ -89,7 +89,7 @@ export default function Home() {
           </span>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex gap-3 md:gap-4 items-center"
@@ -119,8 +119,8 @@ export default function Home() {
             </>
           ) : (
             <>
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-slate-300 hover:text-teal-400 transition px-3 py-2 font-medium"
               >
                 Login
@@ -225,7 +225,7 @@ export default function Home() {
                       My Medicines
                     </h3>
                   </Link>
-                  
+
                   <Link
                     to="/records"
                     className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-violet-500/30 hover:bg-slate-800 transition-all duration-300"
@@ -237,7 +237,7 @@ export default function Home() {
                       Upload Record
                     </h3>
                   </Link>
-                  
+
                   <Link
                     to="/analytics"
                     className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-cyan-500/30 hover:bg-slate-800 transition-all duration-300"
@@ -249,7 +249,7 @@ export default function Home() {
                       Analytics
                     </h3>
                   </Link>
-                  
+
                   <Link
                     to="/history"
                     className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-emerald-500/30 hover:bg-slate-800 transition-all duration-300"
@@ -297,7 +297,7 @@ export default function Home() {
       {!user && (
         <section className="relative px-4 py-16 md:px-8 lg:px-16 md:py-24 lg:py-32">
           <div className="max-w-7xl mx-auto">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -335,7 +335,7 @@ export default function Home() {
                 transition={{ delay: 0.4 }}
                 className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed"
               >
-                Your complete health management platform. Track medicines, store medical records, 
+                Your complete health management platform. Track medicines, store medical records,
                 monitor vitals, and stay on top of your wellness journey — all in one place.
               </motion.p>
 
@@ -353,7 +353,7 @@ export default function Home() {
                   <span>Start Free Today</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                
+
                 <Link
                   to="/login"
                   className="w-full sm:w-auto bg-slate-800/80 backdrop-blur text-slate-200 px-8 py-4 rounded-2xl text-lg font-semibold hover:bg-slate-700 transition-all duration-300 border border-slate-700"
@@ -377,21 +377,21 @@ export default function Home() {
                       <div className="w-3 h-3 rounded-full bg-yellow-500" />
                       <div className="w-3 h-3 rounded-full bg-green-500" />
                     </div>
-                    
+
                     <div className="grid grid-cols-4 gap-4">
                       {/* Sidebar Mock */}
                       <div className="hidden md:block col-span-1 bg-slate-800/50 rounded-2xl p-4">
                         <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl mb-6" />
-                        {[1,2,3,4,5].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                           <div key={i} className="h-8 bg-slate-700/50 rounded-lg mb-2" />
                         ))}
                       </div>
-                      
+
                       {/* Main Content Mock */}
                       <div className="col-span-4 md:col-span-3 space-y-4">
                         <div className="h-32 bg-gradient-to-r from-teal-500/20 to-cyan-500/20 rounded-2xl border border-teal-500/20" />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {[1,2,3,4].map(i => (
+                          {[1, 2, 3, 4].map(i => (
                             <div key={i} className="h-24 bg-slate-800/50 rounded-xl border border-slate-700/50" />
                           ))}
                         </div>
@@ -407,7 +407,7 @@ export default function Home() {
                   >
                     <Pill size={32} className="text-white" />
                   </motion.div>
-                  
+
                   <motion.div
                     animate={{ y: [0, 10, 0] }}
                     transition={{ duration: 4, repeat: Infinity }}

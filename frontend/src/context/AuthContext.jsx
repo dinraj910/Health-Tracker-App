@@ -1,18 +1,10 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect } from "react";
 import { logoutUser, getCurrentUser } from "../services/authService";
 
 const AuthContext = createContext();
 
 export { AuthContext };
 
-// Custom hook for using auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(
@@ -62,11 +54,11 @@ export default function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      login, 
-      logout, 
+    <AuthContext.Provider value={{
+      user,
+      token,
+      login,
+      logout,
       loading,
       isAuthenticated: !!user && !!token
     }}>

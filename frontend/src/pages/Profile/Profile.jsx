@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Camera, 
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Camera,
   Save,
   Edit2,
   Shield,
@@ -21,13 +21,13 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Button, Input, Modal, Badge, Loader } from '../../components/ui';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { updateProfile, updatePassword, uploadAvatar, deleteAccount } from '../../services/userService';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef(null);
-  
+
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -95,7 +95,7 @@ const Profile = () => {
       setLoading(true);
       const formData = new FormData();
       formData.append('avatar', file);
-      
+
       const data = await uploadAvatar(formData);
       setProfile(prev => ({ ...prev, avatar: data.avatarUrl }));
       updateUser({ ...user, avatar: data.avatarUrl });
@@ -110,13 +110,13 @@ const Profile = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const data = await updateProfile({
         name: profile.name,
         phone: profile.phone,
         dateOfBirth: profile.dateOfBirth
       });
-      
+
       updateUser(data.user);
       setEditing(false);
       setSaveSuccess(true);
@@ -148,7 +148,7 @@ const Profile = () => {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
       });
-      
+
       setShowPasswordModal(false);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setSaveSuccess(true);
@@ -204,13 +204,13 @@ const Profile = () => {
           <div className="flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar */}
             <div className="relative group">
-              <div 
+              <div
                 onClick={handleAvatarClick}
                 className="w-28 h-28 rounded-full overflow-hidden cursor-pointer border-4 border-white/20 relative"
               >
                 {profile.avatar ? (
-                  <img 
-                    src={profile.avatar} 
+                  <img
+                    src={profile.avatar}
                     alt={profile.name}
                     className="w-full h-full object-cover"
                   />
@@ -248,8 +248,8 @@ const Profile = () => {
             </div>
 
             {/* Edit Button */}
-            <Button 
-              variant={editing ? 'ghost' : 'outline'} 
+            <Button
+              variant={editing ? 'ghost' : 'outline'}
               leftIcon={editing ? <X size={18} /> : <Edit2 size={18} />}
               onClick={() => setEditing(!editing)}
             >
@@ -315,8 +315,8 @@ const Profile = () => {
 
           {editing && (
             <div className="flex justify-end mt-6">
-              <Button 
-                variant="gradient" 
+              <Button
+                variant="gradient"
                 leftIcon={<Save size={18} />}
                 onClick={handleSaveProfile}
                 loading={loading}
@@ -345,8 +345,8 @@ const Profile = () => {
                   <p className="text-sm text-slate-400">Last updated 30 days ago</p>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setShowPasswordModal(true)}
               >
@@ -408,8 +408,8 @@ const Profile = () => {
               <p className="text-white font-medium">Delete Account</p>
               <p className="text-sm text-slate-400">Permanently delete your account and all data</p>
             </div>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               size="sm"
               leftIcon={<Trash2 size={16} />}
               onClick={() => setShowDeleteModal(true)}
@@ -499,8 +499,8 @@ const Profile = () => {
             <Button variant="outline" type="button" onClick={() => setShowPasswordModal(false)}>
               Cancel
             </Button>
-            <Button 
-              variant="gradient" 
+            <Button
+              variant="gradient"
               type="submit"
               loading={passwordLoading}
             >
@@ -529,7 +529,7 @@ const Profile = () => {
               <div>
                 <p className="text-white font-medium mb-2">This action is irreversible</p>
                 <p className="text-slate-400 text-sm">
-                  Deleting your account will permanently remove all your data including medicines, 
+                  Deleting your account will permanently remove all your data including medicines,
                   logs, and medical records. This cannot be undone.
                 </p>
               </div>
@@ -551,7 +551,7 @@ const Profile = () => {
           <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             disabled={deleteConfirm !== 'DELETE'}
             loading={deleteLoading}

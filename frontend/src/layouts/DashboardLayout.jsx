@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import MobileNav from '../components/layout/MobileNav';
@@ -37,10 +37,10 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader 
-          variant="gradient" 
-          size="xl" 
-          text="Loading dashboard..." 
+        <Loader
+          variant="gradient"
+          size="xl"
+          text="Loading dashboard..."
         />
       </div>
     );
@@ -50,14 +50,14 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
     <div className="min-h-screen bg-slate-950 flex">
       {/* Sidebar - Desktop */}
       <div className="hidden md:block">
-        <Sidebar 
+        <Sidebar
           isOpen={true}
-          onClose={() => {}}
+          onClose={() => { }}
         />
       </div>
-      
+
       {/* Mobile Sidebar */}
-      <Sidebar 
+      <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         className="md:hidden"
@@ -84,7 +84,7 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
               </div>
             </div>
           )}
-          
+
           {/* Content Container */}
           <div className={fullWidth ? 'w-full' : 'max-w-7xl mx-auto'}>
             <div className="px-4 md:px-6 py-4 md:py-6 pb-20 md:pb-6">
@@ -98,20 +98,6 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
       <MobileNav />
     </div>
   );
-};
-
-// HOC for pages that need authentication
-export const withDashboardLayout = (
-  WrappedComponent, 
-  { title, fullWidth } = {}
-) => {
-  return function DashboardPage(props) {
-    return (
-      <DashboardLayout title={title} fullWidth={fullWidth}>
-        <WrappedComponent {...props} />
-      </DashboardLayout>
-    );
-  };
 };
 
 export default DashboardLayout;

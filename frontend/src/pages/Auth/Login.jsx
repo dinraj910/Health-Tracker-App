@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { loginUser } from "../../services/authService";
 
 export default function Login() {
@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <AuthLayout>
       <div className="space-y-6">
-        
+
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-600/20 rounded-full mb-2">
@@ -60,10 +60,10 @@ export default function Login() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-          
+
           <div>
             <label className="block mb-1.5 text-sm font-medium text-slate-300">Email</label>
-            <input 
+            <input
               type="email"
               name="email"
               value={formData.email}
@@ -84,7 +84,7 @@ export default function Login() {
               </Link>
             </div>
             <div className="relative">
-              <input 
+              <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}

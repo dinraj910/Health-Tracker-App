@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { registerUser } from "../../services/authService";
 
 export default function Register() {
@@ -40,7 +40,7 @@ export default function Register() {
   return (
     <AuthLayout>
       <div className="space-y-5 md:space-y-6">
-        
+
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-blue-600/20 rounded-full mb-2">
@@ -63,10 +63,10 @@ export default function Register() {
 
         {/* Register Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
           <div>
             <label className="block mb-1.5 text-sm font-medium text-slate-300">Full Name</label>
-            <input 
+            <input
               type="text"
               name="name"
               value={formData.name}
@@ -81,7 +81,7 @@ export default function Register() {
 
           <div>
             <label className="block mb-1.5 text-sm font-medium text-slate-300">Email</label>
-            <input 
+            <input
               type="email"
               name="email"
               value={formData.email}
@@ -97,7 +97,7 @@ export default function Register() {
           <div>
             <label className="block mb-1.5 text-sm font-medium text-slate-300">Password</label>
             <div className="relative">
-              <input 
+              <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
@@ -123,7 +123,7 @@ export default function Register() {
           <div className="grid grid-cols-2 gap-3 md:gap-4">
             <div>
               <label className="block mb-1.5 text-sm font-medium text-slate-300">Age</label>
-              <input 
+              <input
                 type="number"
                 name="age"
                 value={formData.age}
@@ -139,7 +139,7 @@ export default function Register() {
 
             <div>
               <label className="block mb-1.5 text-sm font-medium text-slate-300">Blood Group</label>
-              <select 
+              <select
                 name="bloodGroup"
                 value={formData.bloodGroup}
                 onChange={handleChange}
@@ -161,8 +161,8 @@ export default function Register() {
 
           {/* Terms */}
           <div className="flex items-start gap-3">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               id="terms"
               required
               className="mt-1 w-4 h-4 rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-blue-500"
