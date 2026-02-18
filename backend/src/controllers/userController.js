@@ -25,6 +25,7 @@ export const getProfile = asyncHandler(async (req, res) => {
 export const updateProfile = asyncHandler(async (req, res) => {
   const allowedUpdates = [
     "name",
+    "phone",
     "age",
     "gender",
     "bloodGroup",
@@ -201,6 +202,49 @@ export const deactivateAccount = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * @desc    Update password
+ * @route   PUT /api/user/password
+ * @access  Private
+ */
+export const updatePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide current and new password",
+    });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be at least 8 characters",
+    });
+  }
+
+  // Get user with password field
+  const user = await User.findById(req.user._id).select("+password");
+
+  // Check current password
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      message: "Current password is incorrect",
+    });
+  }
+
+  user.password = newPassword;
+  await user.save(); // pre-save hook will hash the password
+
+  res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
+  });
+});
+
 export default {
   getProfile,
   updateProfile,
@@ -209,4 +253,5 @@ export default {
   removeAllergy,
   updateEmergencyContact,
   deactivateAccount,
+  updatePassword,
 };

@@ -7,6 +7,7 @@ import {
   removeAllergy,
   updateEmergencyContact,
   deactivateAccount,
+  updatePassword,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { uploadAvatar } from "../middleware/uploadMiddleware.js";
@@ -19,6 +20,7 @@ router.use(protect);
 // Profile routes
 router.get("/profile", getProfile);
 router.put("/profile", updateProfile);
+router.put("/password", updatePassword);
 router.put("/avatar", uploadAvatar.single("avatar"), updateAvatar);
 
 // Allergies

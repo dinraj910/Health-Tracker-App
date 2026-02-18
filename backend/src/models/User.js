@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema(
       minlength: [8, "Password must be at least 8 characters"],
       select: false, // Don't return password by default
     },
+    phone: {
+      type: String,
+      trim: true,
+    },
     age: {
       type: Number,
       min: [1, "Age must be at least 1"],
@@ -88,25 +92,25 @@ const userSchema = new mongoose.Schema(
     insuranceInfo: {
       provider: { type: String, trim: true },
       policyNumber: { type: String, trim: true },
-      validUntil: { type: Date },
+      validTill: { type: Date },
     },
 
     // ── Lifestyle ──
     smokingStatus: {
       type: String,
-      enum: ["never", "former", "current"],
+      enum: ["never", "former", "current", "occasional"],
     },
     alcoholUse: {
       type: String,
-      enum: ["none", "occasional", "moderate", "heavy"],
+      enum: ["never", "none", "social", "occasional", "moderate", "heavy"],
     },
     activityLevel: {
       type: String,
-      enum: ["sedentary", "light", "moderate", "active", "very-active"],
+      enum: ["sedentary", "light", "moderate", "active", "very-active", "intense"],
     },
     dietaryPreference: {
       type: String,
-      enum: ["none", "vegetarian", "vegan", "keto", "other"],
+      enum: ["none", "vegetarian", "non-vegetarian", "vegan", "keto", "other"],
     },
 
     avatar: {
