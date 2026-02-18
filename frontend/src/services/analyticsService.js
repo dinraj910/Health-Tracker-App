@@ -21,9 +21,17 @@ export const getMonthlyStats = async (month, year) => {
 };
 
 // Get adherence rate
-export const getAdherenceRate = async (startDate, endDate) => {
+export const getAdherenceRate = async (days = 30) => {
   const response = await api.get('/analytics/adherence', {
-    params: { startDate, endDate }
+    params: { days }
+  });
+  return response.data;
+};
+
+// Get per-medicine stats
+export const getMedicineStats = async (days = 30) => {
+  const response = await api.get('/analytics/medicines', {
+    params: { days }
   });
   return response.data;
 };
@@ -46,12 +54,27 @@ export const getTimeAnalysis = async () => {
   return response.data;
 };
 
+// Get vitals trends (BP, heart rate, weight, blood sugar, SpO2)
+export const getVitalsTrends = async (days = 7) => {
+  const response = await api.get('/analytics/vitals', { params: { days } });
+  return response.data;
+};
+
+// Get wellness trends (mood, sleep, stress, energy, water, steps)
+export const getWellnessTrends = async (days = 7) => {
+  const response = await api.get('/analytics/wellness', { params: { days } });
+  return response.data;
+};
+
 export default {
   getAnalytics,
   getWeeklyStats,
   getMonthlyStats,
   getAdherenceRate,
+  getMedicineStats,
   getStreakInfo,
   getDashboardSummary,
-  getTimeAnalysis
+  getTimeAnalysis,
+  getVitalsTrends,
+  getWellnessTrends,
 };

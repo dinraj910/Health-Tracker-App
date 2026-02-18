@@ -4,6 +4,8 @@ import {
   getAdherence,
   getMedicineStats,
   getDashboardStats,
+  getVitalsTrends,
+  getWellnessTrends,
 } from "../controllers/analyticsController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -17,5 +19,7 @@ router.get("/weekly", getWeeklyAnalytics);
 router.get("/adherence", getAdherence);
 router.get("/medicines", getMedicineStats);
 router.get("/dashboard", getDashboardStats);
+router.get("/vitals", getVitalsTrends);
+router.get("/wellness", getWellnessTrends);
 
 export default router;

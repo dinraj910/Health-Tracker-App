@@ -30,6 +30,16 @@ export const updateProfile = asyncHandler(async (req, res) => {
     "bloodGroup",
     "allergies",
     "emergencyContact",
+    "height",
+    "weight",
+    "dateOfBirth",
+    "chronicConditions",
+    "currentDoctors",
+    "insuranceInfo",
+    "smokingStatus",
+    "alcoholUse",
+    "activityLevel",
+    "dietaryPreference",
   ];
 
   const updates = {};

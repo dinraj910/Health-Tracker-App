@@ -12,6 +12,7 @@ import {
   logRoutes,
   recordRoutes,
   analyticsRoutes,
+  healthLogRoutes,
 } from "./routes/index.js";
 
 
@@ -42,16 +43,16 @@ app.use(
     origin: function (origin, callback) {
       // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
-      
+
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
+
       // For development, be more permissive
       if (process.env.NODE_ENV !== 'production' && origin?.includes('localhost')) {
         return callback(null, true);
       }
-      
+
       callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
@@ -98,6 +99,7 @@ app.use("/api/medicine", medicineRoutes);
 app.use("/api/log", logRoutes);
 app.use("/api/records", recordRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/health-logs", healthLogRoutes);
 
 // ===========================================
 // ERROR HANDLING

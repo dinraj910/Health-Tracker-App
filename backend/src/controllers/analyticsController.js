@@ -1,5 +1,6 @@
 import MedicineLog from "../models/MedicineLog.js";
 import Medicine from "../models/Medicine.js";
+import HealthLog from "../models/HealthLog.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
 
 /**
@@ -169,7 +170,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     $or: [{ endDate: null }, { endDate: { $gte: today } }],
   });
 
-  // Get today's logs
+  // Get today's medicine logs
   const todayLogs = await MedicineLog.find({
     userId: req.user._id,
     date: { $gte: today, $lte: endOfToday },
@@ -184,6 +185,14 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
   // Calculate streak
   const streak = await calculateStreak(req.user._id);
 
+  // Get today's health log
+  const todayHealthLog = await HealthLog.getTodayLog(req.user._id);
+
+  // Get last 7 days of health logs for sparkline trends
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  const weeklyHealthLogs = await HealthLog.getRange(req.user._id, weekAgo, endOfToday);
+
   res.status(200).json({
     success: true,
     data: {
@@ -195,7 +204,139 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       },
       weeklyAdherence,
       streak,
+      todayHealthLog: todayHealthLog || null,
+      weeklyHealthLogs: weeklyHealthLogs || [],
     },
+  });
+});
+
+/**
+ * @desc    Get vitals trends (BP, heart rate, weight, blood sugar, SpO2)
+ * @route   GET /api/analytics/vitals
+ * @access  Private
+ */
+export const getVitalsTrends = asyncHandler(async (req, res) => {
+  const { days = 7 } = req.query;
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - parseInt(days));
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+
+  const logs = await HealthLog.find({
+    userId: req.user._id,
+    date: { $gte: startDate, $lte: endDate },
+  }).sort({ date: 1 });
+
+  // Extract trend data for each vital
+  const trends = {
+    bloodPressure: [],
+    heartRate: [],
+    weight: [],
+    bloodSugar: [],
+    oxygenLevel: [],
+  };
+
+  logs.forEach((log) => {
+    const dateStr = log.date.toISOString().split("T")[0];
+
+    if (log.bloodPressure?.systolic && log.bloodPressure?.diastolic) {
+      trends.bloodPressure.push({
+        date: dateStr,
+        systolic: log.bloodPressure.systolic,
+        diastolic: log.bloodPressure.diastolic,
+        status: log.bpStatus,
+      });
+    }
+    if (log.heartRate) {
+      trends.heartRate.push({ date: dateStr, value: log.heartRate });
+    }
+    if (log.weight) {
+      trends.weight.push({ date: dateStr, value: log.weight });
+    }
+    if (log.bloodSugar?.fasting || log.bloodSugar?.postMeal) {
+      trends.bloodSugar.push({
+        date: dateStr,
+        fasting: log.bloodSugar.fasting || null,
+        postMeal: log.bloodSugar.postMeal || null,
+      });
+    }
+    if (log.oxygenLevel) {
+      trends.oxygenLevel.push({ date: dateStr, value: log.oxygenLevel });
+    }
+  });
+
+  res.status(200).json({
+    success: true,
+    data: { trends, period: `${days} days`, count: logs.length },
+  });
+});
+
+/**
+ * @desc    Get wellness trends (mood, sleep, stress, energy, water, steps)
+ * @route   GET /api/analytics/wellness
+ * @access  Private
+ */
+export const getWellnessTrends = asyncHandler(async (req, res) => {
+  const { days = 7 } = req.query;
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - parseInt(days));
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+
+  const logs = await HealthLog.find({
+    userId: req.user._id,
+    date: { $gte: startDate, $lte: endDate },
+  }).sort({ date: 1 });
+
+  const trends = {
+    mood: [],
+    sleep: [],
+    stress: [],
+    energy: [],
+    water: [],
+    steps: [],
+    exercise: [],
+  };
+
+  logs.forEach((log) => {
+    const dateStr = log.date.toISOString().split("T")[0];
+
+    if (log.mood) {
+      trends.mood.push({ date: dateStr, value: log.mood });
+    }
+    if (log.sleepHours != null) {
+      trends.sleep.push({
+        date: dateStr,
+        hours: log.sleepHours,
+        quality: log.sleepQuality || null,
+      });
+    }
+    if (log.stressLevel) {
+      trends.stress.push({ date: dateStr, value: log.stressLevel });
+    }
+    if (log.energyLevel) {
+      trends.energy.push({ date: dateStr, value: log.energyLevel });
+    }
+    if (log.waterIntake != null) {
+      trends.water.push({ date: dateStr, value: log.waterIntake });
+    }
+    if (log.stepsCount != null) {
+      trends.steps.push({ date: dateStr, value: log.stepsCount });
+    }
+    if (log.exerciseMinutes != null) {
+      trends.exercise.push({ date: dateStr, value: log.exerciseMinutes });
+    }
+  });
+
+  res.status(200).json({
+    success: true,
+    data: { trends, period: `${days} days`, count: logs.length },
   });
 });
 
@@ -249,4 +390,6 @@ export default {
   getAdherence,
   getMedicineStats,
   getDashboardStats,
+  getVitalsTrends,
+  getWellnessTrends,
 };

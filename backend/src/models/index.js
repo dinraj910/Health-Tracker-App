@@ -3,3 +3,4 @@ export { default as User } from "./User.js";
 export { default as Medicine } from "./Medicine.js";
 export { default as MedicineLog } from "./MedicineLog.js";
 export { default as MedicalRecord } from "./MedicalRecord.js";
+export { default as HealthLog } from "./HealthLog.js";

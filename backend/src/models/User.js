@@ -56,6 +56,59 @@ const userSchema = new mongoose.Schema(
         trim: true,
       },
     },
+
+    // ── Physical Info ──
+    height: {
+      type: Number,
+      min: [30, "Height must be at least 30 cm"],
+      max: [300, "Height cannot exceed 300 cm"],
+    },
+    weight: {
+      type: Number,
+      min: [1, "Weight must be at least 1 kg"],
+      max: [500, "Weight cannot exceed 500 kg"],
+    },
+    dateOfBirth: {
+      type: Date,
+    },
+
+    // ── Medical Profile ──
+    chronicConditions: {
+      type: [String],
+      default: [],
+    },
+    currentDoctors: [
+      {
+        name: { type: String, trim: true },
+        specialty: { type: String, trim: true },
+        hospital: { type: String, trim: true },
+        phone: { type: String, trim: true },
+      },
+    ],
+    insuranceInfo: {
+      provider: { type: String, trim: true },
+      policyNumber: { type: String, trim: true },
+      validUntil: { type: Date },
+    },
+
+    // ── Lifestyle ──
+    smokingStatus: {
+      type: String,
+      enum: ["never", "former", "current"],
+    },
+    alcoholUse: {
+      type: String,
+      enum: ["none", "occasional", "moderate", "heavy"],
+    },
+    activityLevel: {
+      type: String,
+      enum: ["sedentary", "light", "moderate", "active", "very-active"],
+    },
+    dietaryPreference: {
+      type: String,
+      enum: ["none", "vegetarian", "vegan", "keto", "other"],
+    },
+
     avatar: {
       type: String,
       default: "",
@@ -73,7 +126,7 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  
+
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });

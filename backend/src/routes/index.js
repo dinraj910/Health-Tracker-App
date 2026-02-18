@@ -5,3 +5,4 @@ export { default as medicineRoutes } from "./medicineRoutes.js";
 export { default as logRoutes } from "./logRoutes.js";
 export { default as recordRoutes } from "./recordRoutes.js";
 export { default as analyticsRoutes } from "./analyticsRoutes.js";
+export { default as healthLogRoutes } from "./healthLogRoutes.js";
