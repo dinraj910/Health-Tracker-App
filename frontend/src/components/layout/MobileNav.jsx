@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Pill, 
-  Plus, 
-  BarChart3, 
+import {
+  Home,
+  Pill,
+  Plus,
+  BarChart3,
   User,
   Activity
 } from 'lucide-react';
@@ -27,7 +27,7 @@ const MobileNav = ({ className }) => {
       className
     )}>
       <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
-        {bottomNavigation.map((item, index) => {
+        {bottomNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
 
@@ -46,7 +46,7 @@ const MobileNav = ({ className }) => {
                 >
                   <Icon size={24} className="text-slate-900" />
                 </motion.div>
-                
+
                 {/* Label */}
                 <motion.span
                   initial={{ opacity: 0, y: 10 }}
@@ -73,14 +73,14 @@ const MobileNav = ({ className }) => {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="relative"
               >
-                <Icon 
-                  size={20} 
+                <Icon
+                  size={20}
                   className={cn(
                     'transition-colors duration-200',
                     isActive && 'drop-shadow-sm'
                   )}
                 />
-                
+
                 {/* Active dot indicator */}
                 {isActive && (
                   <motion.div
@@ -92,7 +92,7 @@ const MobileNav = ({ className }) => {
                   />
                 )}
               </motion.div>
-              
+
               {/* Label */}
               <motion.span
                 animate={isActive ? { fontWeight: 500 } : { fontWeight: 400 }}
@@ -100,7 +100,7 @@ const MobileNav = ({ className }) => {
               >
                 {item.name}
               </motion.span>
-              
+
               {/* Active glow effect */}
               {isActive && (
                 <motion.div
@@ -115,7 +115,7 @@ const MobileNav = ({ className }) => {
           );
         })}
       </div>
-      
+
       {/* Safe area spacing for phones with home indicators */}
       <div className="h-safe-area-inset-bottom bg-slate-900/95" />
     </nav>
