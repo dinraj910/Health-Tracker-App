@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-  TrendingUp,
   Heart,
   Activity,
   Moon,
@@ -11,8 +10,6 @@ import {
   Weight,
   Footprints,
   Pill,
-  Calendar,
-  ChevronDown,
   BarChart3,
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
@@ -102,26 +99,30 @@ const BarChart = ({ data, labels, colors = { taken: '#14b8a6', missed: '#ef4444'
 };
 
 // ── Vital Trend Card ──
-const VitalTrendCard = ({ icon: Icon, iconColor, iconBg, title, latestValue, unit, sparkData, sparkColor, status, statusColor }) => (
-  <Card variant="glass" className="p-4">
-    <div className="flex items-start justify-between mb-3">
-      <div className="flex items-center gap-2">
-        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}>
-          <Icon size={16} className={iconColor} />
+const VitalTrendCard = (props) => {
+  const IconComponent = props.icon;
+  const { iconColor, iconBg, title, latestValue, unit, sparkData, sparkColor, status, statusColor } = props;
+  return (
+    <Card variant="glass" className="p-4">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}>
+            <IconComponent size={16} className={iconColor} />
+          </div>
+          <span className="text-xs font-medium text-slate-400">{title}</span>
         </div>
-        <span className="text-xs font-medium text-slate-400">{title}</span>
+        {status && <Badge variant={statusColor || 'secondary'} className="text-[10px]">{status}</Badge>}
       </div>
-      {status && <Badge variant={statusColor || 'secondary'} className="text-[10px]">{status}</Badge>}
-    </div>
-    <div className="flex items-end justify-between">
-      <div>
-        <span className="text-2xl font-bold text-white">{latestValue}</span>
-        {unit && <span className="text-xs text-slate-400 ml-1">{unit}</span>}
+      <div className="flex items-end justify-between">
+        <div>
+          <span className="text-2xl font-bold text-white">{latestValue}</span>
+          {unit && <span className="text-xs text-slate-400 ml-1">{unit}</span>}
+        </div>
+        <Sparkline data={sparkData} color={sparkColor} />
       </div>
-      <Sparkline data={sparkData} color={sparkColor} />
-    </div>
-  </Card>
-);
+    </Card>
+  );
+};
 
 // ── Mood Map ──
 const MOOD_EMOJI = { terrible: '😫', bad: '😞', okay: '😐', good: '🙂', great: '😄' };

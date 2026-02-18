@@ -22,7 +22,6 @@ import {
   Weight,
   HeartPulse,
   Stethoscope,
-  ClipboardList,
   Dumbbell,
   Wine,
   Cigarette,
@@ -31,12 +30,13 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import { Card, Button, Input, Modal, Badge, Loader } from '../../components/ui';
+import { Card, Button, Input, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { updateProfile, updatePassword, uploadAvatar, deleteAccount } from '../../services/userService';
 
 // ── Section wrapper for collapsible health cards ──
-const ProfileSection = ({ icon: Icon, iconColor, iconBg, title, children, defaultOpen = false }) => {
+const ProfileSection = ({ icon, iconColor, iconBg, title, children, defaultOpen = false }) => {
+  const IconComponent = icon;
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Card variant="default">
@@ -45,7 +45,7 @@ const ProfileSection = ({ icon: Icon, iconColor, iconBg, title, children, defaul
         className="flex items-center gap-3 w-full text-left"
       >
         <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
-          <Icon size={20} className={iconColor} />
+          <IconComponent size={20} className={iconColor} />
         </div>
         <h2 className="text-lg font-semibold text-white flex-1">{title}</h2>
         <motion.span
