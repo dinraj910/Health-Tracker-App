@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useAuth } from "../../hooks/useAuth";
-import { loginUser } from "../../services/authService";
+import { loginUser, googleAuth } from "../../services/authService";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,55 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const googleBtnRef = useRef(null);
+
+  // Google Sign-In callback
+  const handleGoogleResponse = useCallback(async (response) => {
+    setError("");
+    setLoading(true);
+    try {
+      const data = await googleAuth(response.credential);
+      login(data);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.response?.data?.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [login, navigate]);
+
+  // Initialize Google Sign-In
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        window.google.accounts.id.renderButton(googleBtnRef.current, {
+          theme: "filled_black",
+          size: "large",
+          width: "100%",
+          text: "signin_with",
+          shape: "pill",
+          logo_alignment: "center",
+        });
+      }
+    };
+
+    // GSI script might load after component mounts
+    if (window.google?.accounts?.id) {
+      initGoogle();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          initGoogle();
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [handleGoogleResponse]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -125,14 +174,9 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Social Login */}
-        <div className="grid grid-cols-2 gap-3">
-          <button className="flex items-center justify-center gap-2 py-2.5 md:py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition text-slate-300 text-sm">
-            <span></span> Google
-          </button>
-          <button className="flex items-center justify-center gap-2 py-2.5 md:py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition text-slate-300 text-sm">
-            <span></span> Apple
-          </button>
+        {/* Google Sign-In */}
+        <div className="flex justify-center">
+          <div ref={googleBtnRef} className="w-full [&>div]:!w-full"></div>
         </div>
 
         {/* Footer */}

@@ -1,6 +1,9 @@
 import User from "../models/User.js";
 import { generateToken } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Cookie options
 const cookieOptions = {
@@ -194,4 +197,86 @@ export const changePassword = asyncHandler(async (req, res) => {
   });
 });
 
-export default { register, login, logout, getMe, changePassword };
+/**
+ * @desc    Authenticate with Google
+ * @route   POST /api/auth/google
+ * @access  Public
+ */
+export const googleAuth = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    return res.status(400).json({
+      success: false,
+      message: "Google credential is required",
+    });
+  }
+
+  // Verify the Google ID token
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid Google token",
+    });
+  }
+
+  const { sub: googleId, email, name, picture } = payload;
+
+  // Find existing user by googleId or email
+  let user = await User.findOne({
+    $or: [{ googleId }, { email }],
+  });
+
+  if (user) {
+    // If user exists with email but no googleId, link the Google account
+    if (!user.googleId) {
+      user.googleId = googleId;
+      user.authProvider = "google";
+      if (picture && !user.avatar) {
+        user.avatar = picture;
+      }
+      await user.save();
+    }
+  } else {
+    // Create a new user
+    user = await User.create({
+      name,
+      email,
+      googleId,
+      authProvider: "google",
+      avatar: picture || "",
+    });
+  }
+
+  // Check if account is active
+  if (!user.isActive) {
+    return res.status(401).json({
+      success: false,
+      message: "Account is deactivated. Please contact support.",
+    });
+  }
+
+  // Generate token
+  const token = generateToken(user._id);
+
+  // Set cookie
+  res.cookie("token", token, cookieOptions);
+
+  res.status(200).json({
+    success: true,
+    message: "Google authentication successful!",
+    data: {
+      user,
+      token,
+    },
+  });
+});
+
+export default { register, login, logout, getMe, changePassword, googleAuth };
