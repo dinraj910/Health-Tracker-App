@@ -437,7 +437,7 @@ export default function Home() {
                   transition={{ delay: 0.4, duration: 0.5 }}
                   className="grid grid-cols-2 gap-4"
                 >
-                  {quickActions.map((action, i) => (
+                  {quickActions.map((action) => (
                     <Link
                       key={action.to}
                       to={action.to}
