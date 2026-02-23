@@ -325,13 +325,15 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   // Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(`[DEV] Password reset OTP for ${email}: ${otp}`);
 
   // Hash OTP before storing
   const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
-  user.passwordResetOTP = hashedOTP;
-  user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-  await user.save({ validateBeforeSave: false });
+  await User.findByIdAndUpdate(user._id, {
+    passwordResetOTP: hashedOTP,
+    passwordResetExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
+  });
 
   // Send email
   try {
@@ -352,15 +354,18 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       `,
     });
   } catch (err) {
-    // Clear OTP on email failure
-    user.passwordResetOTP = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save({ validateBeforeSave: false });
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to send reset email. Please try again later.",
-    });
+    console.error("Email send error:", err.message);
+    // In development, don't clear OTP — use the console-logged OTP instead
+    if (process.env.NODE_ENV === "production") {
+      await User.findByIdAndUpdate(user._id, {
+        $unset: { passwordResetOTP: 1, passwordResetExpires: 1 },
+      });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send reset email. Please try again later.",
+      });
+    }
+    console.log("[DEV] Email failed but OTP is still valid. Check console above for OTP.");
   }
 
   res.status(200).json({
