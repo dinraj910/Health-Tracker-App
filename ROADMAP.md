@@ -2,7 +2,7 @@
 
 > **Full-stack Health Tracker App** — React + Vite + TailwindCSS (Frontend) · Express + MongoDB + JWT (Backend)
 >
-> Last Updated: February 23, 2026
+> Last Updated: February 24, 2026
 
 ---
 
@@ -175,8 +175,8 @@ MediTrack is a comprehensive health management platform that enables users to:
 | 5.14 | Skeleton loading states for all data-fetching pages | 🔲 To Do |
 | 5.15 | Empty states with illustrations (no medicines, no records, etc.) | 🔲 To Do |
 | 5.16 | Onboarding flow for new users (welcome tour / setup wizard) | 🔲 To Do |
-| 5.17 | Responsive design audit across all breakpoints | 🔲 To Do |
-| 5.18 | Accessibility audit (ARIA labels, keyboard nav, contrast) | 🔲 To Do |
+| 5.17 | Responsive design audit — Desktop (fixed sidebar) & Mobile | ✅ Done |
+| 5.18 | Accessibility & Elderly-friendly redesign — Large cards, big touch targets, 18px+ fonts | ✅ Done |
 | 5.19 | 404 and error boundary pages | 🔲 To Do |
 
 ---
@@ -297,14 +297,14 @@ Phase 1: Foundation          █████████████████
 Phase 2: Auth & Security     ████████████████░░░░  75%  (12/16)
 Phase 3: Core Features       ████████████████████ 100%  (24/24)
 Phase 4: Dashboard           ██████████████░░░░░░  71%  (10/14)
-Phase 5: UI/UX Polish        ██████████░░░░░░░░░░  53%  (10/19)
+Phase 5: UI/UX Polish        ████████████░░░░░░░░  63%  (12/19)
 Phase 6: Medicine API        ░░░░░░░░░░░░░░░░░░░░   0%  (0/9)
 Phase 7: AI & Automation     ░░░░░░░░░░░░░░░░░░░░   0%  (0/14)
-Phase 8: Notifications       ░░░░░░░░░░░░░░░░░░░░   0%  (0/8)
+Phase 8: Notifications       ██░░░░░░░░░░░░░░░░░░  12%  (1/8)
 Phase 9: Social & Export     ░░░░░░░░░░░░░░░░░░░░   0%  (0/7)
 Phase 10: Deployment         ██░░░░░░░░░░░░░░░░░░   7%  (1/15)
 ───────────────────────────────────────────────────────
-OVERALL                      ██████████░░░░░░░░░░  49%  (69/142)
+OVERALL                      ███████████░░░░░░░░░  53%  (72/142)
 ```
 
 ---
