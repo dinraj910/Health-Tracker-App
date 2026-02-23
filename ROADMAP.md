@@ -243,7 +243,7 @@ MediTrack is a comprehensive health management platform that enables users to:
 |---|------|--------|----------|
 | 8.1 | Email reminders for medicine doses (Nodemailer cron job) | 🔲 To Do | 🔴 High |
 | 8.2 | Browser push notifications (Service Worker + Web Push API) | 🔲 To Do | 🔴 High |
-| 8.3 | In-app notification center (bell icon with notification list) | 🔲 To Do | 🔴 High |
+| 8.3 | In-app notification center (interactive dropdown with history) | ✅ Done | 🔴 High |
 | 8.4 | Notification preferences (toggle per category in Profile) | 🔲 To Do | 🟡 Medium |
 | 8.5 | Cron job — Daily medicine reminder emails at scheduled times | 🔲 To Do | 🔴 High |
 | 8.6 | Cron job — Weekly health summary email | 🔲 To Do | 🟡 Medium |
@@ -304,7 +304,7 @@ Phase 8: Notifications       ██░░░░░░░░░░░░░░░
 Phase 9: Social & Export     ░░░░░░░░░░░░░░░░░░░░   0%  (0/7)
 Phase 10: Deployment         ██░░░░░░░░░░░░░░░░░░   7%  (1/15)
 ───────────────────────────────────────────────────────
-OVERALL                      ███████████░░░░░░░░░  53%  (72/142)
+OVERALL                      ██████████░░░░░░░░░░  51%  (72/142)
 ```
 
 ---
