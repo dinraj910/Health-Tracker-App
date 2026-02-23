@@ -422,7 +422,7 @@ const VitalsInputModal = ({ isOpen, onClose, onSave, existingLog }) => {
 };
 
 
-// ── Medicine Timeline Component ──
+// ── Medicine Cards Component (Elderly-Friendly) ──
 function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
   const formatTime12h = (time) => {
     if (!time) return '';
@@ -445,217 +445,176 @@ function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
     return 'upcoming';
   };
 
-  const getTimePeriod = (time) => {
-    const hour = parseInt(time.split(':')[0]);
-    if (hour < 12) return 'Morning';
-    if (hour < 17) return 'Afternoon';
-    return 'Evening';
-  };
-
-  // Build timeline items — one entry per medicine per timing
-  const timelineItems = [];
+  // Build items – one per medicine per timing
+  const items = [];
   medicines.forEach((med) => {
     (med.timings || []).forEach((timing) => {
       const log = med.todayLogs?.find(l => l.scheduledTime === timing);
-      timelineItems.push({
+      items.push({
         id: `${med._id}-${timing}`,
         medicineId: med._id,
         medicineName: med.medicineName,
         dosage: med.dosage,
         category: med.category,
-        color: med.color || '#14b8a6',
         timing,
-        period: getTimePeriod(timing),
         status: log?.status || null,
         timeStatus: getTimeStatus(timing),
       });
     });
   });
 
-  // Sort by timing
-  timelineItems.sort((a, b) => a.timing.localeCompare(b.timing));
+  items.sort((a, b) => a.timing.localeCompare(b.timing));
 
-  // Find next upcoming dose
-  const nextDose = timelineItems.find(
-    (item) => !item.status && (item.timeStatus === 'upcoming' || item.timeStatus === 'now')
-  );
-
-  // Minutes until next dose
-  const getMinutesUntil = (timing) => {
-    const [h, m] = timing.split(':').map(Number);
-    const target = new Date();
-    target.setHours(h, m, 0, 0);
-    return Math.max(0, Math.round((target - new Date()) / (1000 * 60)));
-  };
-
-  if (medicines.length === 0) return null;
-
-  const periods = ['Morning', 'Afternoon', 'Evening'];
+  if (medicines.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card variant="glass" className="p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center">
+            <Pill size={32} className="text-slate-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">No Medicines Today</h3>
+          <p className="text-slate-400 mb-4">You don&apos;t have any medicines scheduled for today.</p>
+          <Link to="/medicines/add">
+            <Button variant="gradient" leftIcon={<Plus size={18} />}>Add Medicine</Button>
+          </Link>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.12 }}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-          <Pill size={16} className="text-teal-400" />
-          Today&apos;s Medicine Schedule
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Pill size={20} className="text-teal-400" />
+          Your Medicines Today
         </h2>
         <Link
           to="/today"
-          className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1 transition-colors"
+          className="text-sm text-teal-400 hover:text-teal-300 flex items-center gap-1 font-medium transition-colors"
         >
-          View All <ArrowRight size={12} />
+          View All <ArrowRight size={14} />
         </Link>
       </div>
 
-      {/* Next Dose Banner */}
-      {nextDose && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-3 px-4 py-3 bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-500/25 rounded-2xl flex items-center gap-3"
-        >
-          <div className="w-9 h-9 rounded-xl bg-teal-500/20 flex items-center justify-center">
-            <Timer size={18} className="text-teal-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white">
-              Next: {nextDose.medicineName}
-            </p>
-            <p className="text-xs text-slate-400">
-              {nextDose.timeStatus === 'now'
-                ? `Due now at ${formatTime12h(nextDose.timing)}`
-                : `In ${getMinutesUntil(nextDose.timing)} min · ${formatTime12h(nextDose.timing)}`
-              }
-            </p>
-          </div>
-          {nextDose.timeStatus === 'now' && (
-            <Badge variant="violet" animation="pulse">Due Now</Badge>
-          )}
-        </motion.div>
-      )}
+      {/* Medicine Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {items.map((item, index) => {
+          const isTaken = item.status === 'taken';
+          const isMissed = item.status === 'missed' || item.status === 'skipped';
+          const isDueNow = !item.status && item.timeStatus === 'now';
+          const isPending = !item.status && (item.timeStatus === 'upcoming' || item.timeStatus === 'now');
 
-      {/* Timeline */}
-      <Card variant="glass" className="p-4">
-        <div className="space-y-1">
-          {periods.map((period) => {
-            const items = timelineItems.filter((i) => i.period === period);
-            if (items.length === 0) return null;
-
-            return (
-              <div key={period} className="mb-3 last:mb-0">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">
-                  {period === 'Morning' ? '🌅' : period === 'Afternoon' ? '☀️' : '🌙'}{' '}
-                  {period}
-                </p>
-
-                <div className="space-y-2">
-                  {items.map((item) => {
-                    const isTaken = item.status === 'taken';
-                    const isMissed = item.status === 'missed' || item.status === 'skipped';
-                    const isDueNow = !item.status && item.timeStatus === 'now';
-                    const isPending = !item.status && item.timeStatus !== 'past';
-                    const isPast = !item.status && item.timeStatus === 'past';
-
-                    return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDueNow
-                            ? 'bg-violet-500/10 border border-violet-500/25'
-                            : isTaken
-                              ? 'bg-green-500/5 border border-green-500/15'
-                              : isMissed
-                                ? 'bg-red-500/5 border border-red-500/15 opacity-60'
-                                : 'bg-slate-800/30 border border-slate-700/30'
-                          }`}
-                      >
-                        {/* Timeline dot */}
-                        <div className="flex flex-col items-center gap-1">
-                          <div className={`w-3 h-3 rounded-full ${isTaken
-                              ? 'bg-green-500'
-                              : isMissed
-                                ? 'bg-red-500'
-                                : isDueNow
-                                  ? 'bg-violet-500 animate-pulse'
-                                  : isPast
-                                    ? 'bg-slate-600'
-                                    : 'bg-slate-500'
-                            }`} />
-                        </div>
-
-                        {/* Time */}
-                        <div className="w-16 shrink-0">
-                          <span className={`text-xs font-mono font-medium ${isDueNow ? 'text-violet-400' : isTaken ? 'text-green-400' : 'text-slate-400'
-                            }`}>
-                            {formatTime12h(item.timing)}
-                          </span>
-                        </div>
-
-                        {/* Medicine Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${isMissed ? 'text-slate-500 line-through' : 'text-white'
-                            }`}>
-                            {item.medicineName}
-                          </p>
-                          <p className="text-[11px] text-slate-500">{item.dosage}</p>
-                        </div>
-
-                        {/* Status / Actions */}
-                        {isTaken ? (
-                          <div className="flex items-center gap-1.5 text-xs text-green-400">
-                            <Check size={14} />
-                            <span className="hidden sm:inline">Taken</span>
-                          </div>
-                        ) : isMissed ? (
-                          <div className="flex items-center gap-1.5 text-xs text-red-400">
-                            <X size={14} />
-                            <span className="hidden sm:inline">Missed</span>
-                          </div>
-                        ) : isDueNow || isPending ? (
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => onLogMedicine(item.medicineId, 'missed')}
-                              disabled={actionLoading === item.medicineId}
-                              className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 transition-colors disabled:opacity-50"
-                            >
-                              <X size={14} />
-                            </button>
-                            <button
-                              onClick={() => onLogMedicine(item.medicineId, 'taken')}
-                              disabled={actionLoading === item.medicineId}
-                              className="px-3 py-1 rounded-lg bg-teal-500/20 text-teal-400 hover:bg-teal-500/30 text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-1"
-                            >
-                              {actionLoading === item.medicineId ? (
-                                <Loader variant="spinner" size="sm" />
-                              ) : (
-                                <>
-                                  <Check size={12} />
-                                  <span className="hidden sm:inline">Take</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-600">--</span>
-                        )}
-                      </motion.div>
-                    );
-                  })}
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.06 }}
+              className={`rounded-2xl p-5 border-2 transition-all duration-200 ${isTaken
+                ? 'bg-green-500/10 border-green-500/30'
+                : isMissed
+                  ? 'bg-red-500/8 border-red-500/20 opacity-70'
+                  : isDueNow
+                    ? 'bg-gradient-to-br from-violet-500/15 to-teal-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
+                    : 'bg-slate-800/60 border-slate-700/40 hover:border-slate-600/60'
+                }`}
+            >
+              {/* Top Row: Icon + Name + Time */}
+              <div className="flex items-start gap-4 mb-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${isTaken
+                  ? 'bg-green-500/20'
+                  : isMissed
+                    ? 'bg-red-500/20'
+                    : isDueNow
+                      ? 'bg-violet-500/20 animate-pulse'
+                      : 'bg-slate-700/50'
+                  }`}>
+                  {isTaken ? (
+                    <CheckCircle2 size={24} className="text-green-400" />
+                  ) : isMissed ? (
+                    <X size={24} className="text-red-400" />
+                  ) : (
+                    <Pill size={24} className={isDueNow ? 'text-violet-400' : 'text-teal-400'} />
+                  )}
                 </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-lg font-bold leading-tight ${isMissed ? 'text-slate-500 line-through' : 'text-white'
+                    }`}>
+                    {item.medicineName}
+                  </h3>
+                  <p className="text-sm text-slate-400 mt-0.5">{item.dosage}</p>
+                </div>
+
+                {/* Status Badge */}
+                {isDueNow && (
+                  <Badge variant="violet" animation="pulse">Due Now</Badge>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </Card>
+
+              {/* Time */}
+              <div className="flex items-center gap-2 mb-4">
+                <Clock size={16} className={isDueNow ? 'text-violet-400' : 'text-slate-500'} />
+                <span className={`text-base font-semibold ${isDueNow ? 'text-violet-300' : isTaken ? 'text-green-400' : 'text-slate-300'
+                  }`}>
+                  {formatTime12h(item.timing)}
+                </span>
+                {item.category && (
+                  <span className="text-xs text-slate-500 bg-slate-700/50 px-2 py-0.5 rounded-full ml-auto">
+                    {item.category}
+                  </span>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {isTaken ? (
+                <div className="flex items-center gap-2 py-3 px-4 bg-green-500/10 rounded-xl">
+                  <CheckCircle2 size={20} className="text-green-400" />
+                  <span className="text-base font-semibold text-green-400">Taken ✓</span>
+                </div>
+              ) : isMissed ? (
+                <div className="flex items-center gap-2 py-3 px-4 bg-red-500/10 rounded-xl">
+                  <AlertCircle size={20} className="text-red-400" />
+                  <span className="text-base font-semibold text-red-400">Missed</span>
+                </div>
+              ) : isPending ? (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => onLogMedicine(item.medicineId, 'missed')}
+                    disabled={actionLoading === item.medicineId}
+                    className="flex-1 py-3 rounded-xl border-2 border-red-500/30 text-red-400 hover:bg-red-500/15 font-semibold text-base transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <X size={18} />
+                    Skip
+                  </button>
+                  <button
+                    onClick={() => onLogMedicine(item.medicineId, 'taken')}
+                    disabled={actionLoading === item.medicineId}
+                    className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-base hover:from-teal-400 hover:to-cyan-400 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20"
+                  >
+                    {actionLoading === item.medicineId ? (
+                      <Loader variant="spinner" size="sm" color="white" />
+                    ) : (
+                      <>
+                        <Check size={20} />
+                        Take Medicine
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="py-3 px-4 bg-slate-800/50 rounded-xl text-center">
+                  <span className="text-sm text-slate-500">Time passed</span>
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 }
-
 
 // ═══════════════════════════════════════════
 // DASHBOARD COMPONENT
@@ -747,17 +706,19 @@ function Dashboard() {
   }
 
   const medProgress = dashData?.todayProgress;
-  const medPercent = medProgress?.total > 0 ? Math.round((medProgress.taken / medProgress.total) * 100) : 0;
-  const waterPercent = todayHealth?.waterIntake ? Math.round((todayHealth.waterIntake / 8) * 100) : 0;
-  const stepsPercent = todayHealth?.stepsCount ? Math.round((todayHealth.stepsCount / 10000) * 100) : 0;
   const bpInfo = getBpInfo(todayHealth);
   const currentMood = MOODS.find(m => m.value === todayHealth?.mood);
+
+  // Medicine counts from actual fetched medicines
+  const totalMeds = todayMedicines.length;
+  const takenCount = todayMedicines.filter(m => m.todayLogs?.some(l => l.status === 'taken')).length;
+  const pendingCount = totalMeds - takenCount;
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
 
-        {/* ── Greeting + AI Briefing ── */}
+        {/* ── Greeting + Medicine Summary ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -768,47 +729,54 @@ function Dashboard() {
               <h1 className="text-xl md:text-2xl font-bold text-white">
                 {getGreeting()}, {user?.name?.split(' ')[0] || 'there'} 👋
               </h1>
-              <p className="text-sm text-slate-300 mt-1.5 max-w-md">
-                {medProgress?.total > 0
-                  ? `${medProgress.taken} of ${medProgress.total} medicines taken today. `
-                  : 'No medicines scheduled today. '}
-                {bpInfo ? `BP: ${bpInfo.systolic}/${bpInfo.diastolic} (${bpInfo.label}). ` : ''}
-                {dashData?.streak > 0 ? `🔥 ${dashData.streak} day streak!` : ''}
+              <p className="text-base text-slate-300 mt-2">
+                {totalMeds > 0
+                  ? `You have ${totalMeds} medicine${totalMeds > 1 ? 's' : ''} today — ${takenCount} taken, ${pendingCount} remaining.`
+                  : 'No medicines scheduled for today.'}
+                {dashData?.streak > 0 ? ` 🔥 ${dashData.streak} day streak!` : ''}
               </p>
             </div>
-            <div className="hidden md:flex items-center gap-2 text-xs text-slate-400">
+            <div className="hidden md:flex items-center gap-2 text-sm text-slate-400">
               <Clock size={14} />
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </div>
           </div>
-        </motion.div>
 
-        {/* ── Health Rings ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card variant="glass" className="p-5">
-            <h2 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-              <Activity size={16} className="text-teal-400" />
-              Today&apos;s Progress
-            </h2>
-            <div className="flex justify-around items-center">
-              <div className="relative">
-                <ProgressRing value={medPercent} color="#14b8a6" label="Medicines" subLabel={`${medProgress?.taken || 0}/${medProgress?.total || 0}`} />
+          {/* Quick Medicine Stats */}
+          {totalMeds > 0 && (
+            <div className="flex gap-4 mt-4 pt-4 border-t border-teal-500/15">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                  <Pill size={16} className="text-teal-400" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-white">{totalMeds}</p>
+                  <p className="text-xs text-slate-400">Total</p>
+                </div>
               </div>
-              <div className="relative">
-                <ProgressRing value={waterPercent} color="#38bdf8" label="Water" subLabel={`${todayHealth?.waterIntake || 0}/8 glasses`} />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <Check size={16} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-green-400">{takenCount}</p>
+                  <p className="text-xs text-slate-400">Taken</p>
+                </div>
               </div>
-              <div className="relative">
-                <ProgressRing value={stepsPercent} color="#a78bfa" label="Steps" subLabel={`${todayHealth?.stepsCount?.toLocaleString() || 0}/10K`} />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Clock size={16} className="text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-amber-400">{pendingCount}</p>
+                  <p className="text-xs text-slate-400">Pending</p>
+                </div>
               </div>
             </div>
-          </Card>
+          )}
         </motion.div>
 
-        {/* ── Today's Medicine Schedule ── */}
+        {/* ── Today's Medicines ── */}
         <MedicineTimeline
           medicines={todayMedicines}
           actionLoading={medActionLoading}
