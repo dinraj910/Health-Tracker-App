@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Pill, 
-  FileText, 
-  BarChart3, 
-  User, 
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Home,
+  Pill,
+  FileText,
+  BarChart3,
+  User,
   History,
   Plus,
   Menu,
@@ -29,6 +29,7 @@ const navigation = [
 
 const Sidebar = ({ isOpen, onClose, className }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Close sidebar on route change (mobile)
@@ -100,7 +101,7 @@ const Sidebar = ({ isOpen, onClose, className }) => {
                 </h1>
               )}
             </motion.div>
-            
+
             {/* Mobile close button */}
             <Button
               variant="ghost"
@@ -145,14 +146,14 @@ const Sidebar = ({ isOpen, onClose, className }) => {
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   )}
                 >
-                  <Icon 
-                    size={20} 
+                  <Icon
+                    size={20}
                     className={cn(
                       'transition-colors duration-200',
                       isActive && 'drop-shadow-sm'
                     )}
                   />
-                  
+
                   <motion.span
                     animate={{ opacity: isCollapsed ? 0 : 1 }}
                     className="truncate"
@@ -188,6 +189,7 @@ const Sidebar = ({ isOpen, onClose, className }) => {
               variant="gradient"
               width="full"
               leftIcon={<Plus size={18} />}
+              onClick={() => navigate('/medicines/add')}
               className={cn(
                 'justify-center',
                 isCollapsed && 'px-0'

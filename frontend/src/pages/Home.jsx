@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Pill,
   FileText,
@@ -12,49 +13,114 @@ import {
   Activity,
   Heart,
   Calendar,
-  Upload
+  Upload,
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Search,
+  Moon,
+  Bell,
+  X,
+  Zap,
+  TrendingUp,
+  Star
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Home() {
   const { user, logout, loading } = useAuth();
+  const navigate = useNavigate();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const profileRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get greeting based on time
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const getGreetingEmoji = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "🌅";
+    if (hour < 17) return "☀️";
+    return "🌙";
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   const features = [
     {
       icon: Pill,
       title: "Smart Medicine Reminders",
       description: "Never miss a dose with intelligent notifications tailored to your schedule.",
-      color: "teal"
+      color: "teal",
+      gradient: "from-teal-500/20 to-emerald-500/10",
+      iconBg: "bg-teal-500/20",
+      iconColor: "text-teal-400"
     },
     {
       icon: FileText,
       title: "Secure Medical Records",
       description: "Store prescriptions, lab reports, and medical documents in one encrypted place.",
-      color: "violet"
+      color: "violet",
+      gradient: "from-violet-500/20 to-purple-500/10",
+      iconBg: "bg-violet-500/20",
+      iconColor: "text-violet-400"
     },
     {
       icon: BarChart3,
       title: "Health Analytics",
       description: "Track symptoms, vitals, and medication adherence with visual insights.",
-      color: "cyan"
+      color: "cyan",
+      gradient: "from-cyan-500/20 to-blue-500/10",
+      iconBg: "bg-cyan-500/20",
+      iconColor: "text-cyan-400"
     },
     {
       icon: Calendar,
       title: "Daily Tracking",
       description: "Log your daily medicine intake and monitor your health journey.",
-      color: "emerald"
+      color: "emerald",
+      gradient: "from-emerald-500/20 to-green-500/10",
+      iconBg: "bg-emerald-500/20",
+      iconColor: "text-emerald-400"
     },
     {
       icon: Users,
       title: "Family Health Tracking",
       description: "Monitor health records for your entire family in one dashboard.",
-      color: "orange"
+      color: "orange",
+      gradient: "from-orange-500/20 to-amber-500/10",
+      iconBg: "bg-orange-500/20",
+      iconColor: "text-orange-400"
     },
     {
       icon: Shield,
       title: "Privacy First",
       description: "Your health data is encrypted and never shared without consent.",
-      color: "rose"
+      color: "rose",
+      gradient: "from-rose-500/20 to-pink-500/10",
+      iconBg: "bg-rose-500/20",
+      iconColor: "text-rose-400"
     }
   ];
 
@@ -65,23 +131,66 @@ export default function Home() {
     { number: "4.8/5", label: "User Rating", icon: Heart }
   ];
 
+  const quickActions = [
+    {
+      to: "/medicines",
+      icon: Pill,
+      title: "My Medicines",
+      desc: "View all medications",
+      iconBg: "bg-teal-500/20",
+      iconColor: "text-teal-400",
+      hoverBorder: "hover:border-teal-500/30",
+      hoverText: "group-hover:text-teal-400"
+    },
+    {
+      to: "/records",
+      icon: Upload,
+      title: "Upload Record",
+      desc: "Add medical files",
+      iconBg: "bg-violet-500/20",
+      iconColor: "text-violet-400",
+      hoverBorder: "hover:border-violet-500/30",
+      hoverText: "group-hover:text-violet-400"
+    },
+    {
+      to: "/analytics",
+      icon: BarChart3,
+      title: "Analytics",
+      desc: "Health insights",
+      iconBg: "bg-cyan-500/20",
+      iconColor: "text-cyan-400",
+      hoverBorder: "hover:border-cyan-500/30",
+      hoverText: "group-hover:text-cyan-400"
+    },
+    {
+      to: "/history",
+      icon: Calendar,
+      title: "History",
+      desc: "Past records",
+      iconBg: "bg-emerald-500/20",
+      iconColor: "text-emerald-400",
+      hoverBorder: "hover:border-emerald-500/30",
+      hoverText: "group-hover:text-emerald-400"
+    }
+  ];
+
   return (
     <div className="bg-slate-950 min-h-screen text-slate-100">
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-40 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 -left-40 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
       {/* NAVBAR */}
-      <nav className="relative flex justify-between items-center px-4 py-4 md:px-8 lg:px-16 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
+      <nav className="relative flex justify-between items-center px-4 py-3 md:px-8 lg:px-16 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2.5"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
             <Heart className="text-white" size={22} />
           </div>
           <span className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
@@ -100,21 +209,130 @@ export default function Home() {
             <>
               <Link
                 to="/dashboard"
-                className="flex items-center gap-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-300 hover:scale-105"
+                className="flex items-center gap-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-300 hover:scale-105 text-sm md:text-base"
               >
                 <span>Dashboard</span>
-                <ArrowRight size={18} />
+                <ArrowRight size={16} />
               </Link>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase() || "U"}
-                </div>
+
+              {/* Profile Dropdown */}
+              <div className="relative" ref={profileRef}>
                 <button
-                  onClick={logout}
-                  className="text-slate-400 hover:text-red-400 transition px-3 py-2 text-sm"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2.5 px-2 md:px-3 py-1.5 rounded-xl hover:bg-slate-800/70 transition-all duration-200"
                 >
-                  Logout
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 via-cyan-400 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg shadow-teal-500/20">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        user.name?.charAt(0).toUpperCase() || "U"
+                      )}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-slate-950" />
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-semibold text-white leading-tight truncate max-w-24">
+                      {user.name?.split(' ')[0] || 'User'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 leading-tight">Online</p>
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    className={`hidden md:block text-slate-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-64 bg-slate-800/95 backdrop-blur-xl border border-slate-600/70 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                    >
+                      {/* User Info */}
+                      <div className="px-4 py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/5 border-b border-slate-700/70">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 via-cyan-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/25">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              user.name?.charAt(0).toUpperCase() || "U"
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{user.name || "User"}</p>
+                            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                              <span className="text-[10px] text-green-400 font-medium">Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            navigate("/profile");
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-teal-500/10 transition-all duration-200 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-teal-500/20 transition-colors">
+                            <User size={14} className="text-slate-400 group-hover:text-teal-400 transition-colors" />
+                          </div>
+                          <span>View Profile</span>
+                          <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            navigate("/profile");
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-all duration-200 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
+                            <Settings size={14} className="text-slate-400 group-hover:text-violet-400 transition-colors" />
+                          </div>
+                          <span>Settings</span>
+                          <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            navigate("/analytics");
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-sky-500/10 transition-all duration-200 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-sky-500/20 transition-colors">
+                            <BarChart3 size={14} className="text-slate-400 group-hover:text-sky-400 transition-colors" />
+                          </div>
+                          <span>Analytics</span>
+                          <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
+                        </button>
+                      </div>
+
+                      {/* Logout */}
+                      <div className="border-t border-slate-700/70 p-2">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all duration-200 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                            <LogOut size={14} />
+                          </div>
+                          <span className="font-medium">Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </>
           ) : (
@@ -138,13 +356,13 @@ export default function Home() {
 
       {/* HERO SECTION FOR LOGGED IN USERS */}
       {user && (
-        <section className="relative px-4 py-12 md:px-8 lg:px-16 md:py-20">
+        <section className="relative px-4 py-10 md:px-8 lg:px-16 md:py-16">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl border border-slate-700/50 p-8 md:p-12"
+              className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl border border-slate-700/50 p-6 md:p-10"
             >
               {/* Decorative Elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-500/20 to-cyan-500/10 rounded-full blur-3xl" />
@@ -153,14 +371,28 @@ export default function Home() {
               <div className="relative grid lg:grid-cols-2 gap-8 items-center">
                 {/* Left Content */}
                 <div>
+                  {/* User Welcome Pill */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500/30 rounded-full text-teal-400 text-sm mb-6"
+                    className="inline-flex items-center gap-3 px-4 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-2xl mb-6"
                   >
-                    <Sparkles size={16} />
-                    <span>Welcome back, {user.name?.split(' ')[0]}!</span>
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-teal-500/20">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        user.name?.charAt(0).toUpperCase() || "U"
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white leading-tight">
+                        {getGreeting()}, {user.name?.split(' ')[0]}! {getGreetingEmoji()}
+                      </p>
+                      <p className="text-[10px] text-slate-400 leading-tight mt-0.5">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
                   </motion.div>
 
                   <motion.h1
@@ -214,53 +446,21 @@ export default function Home() {
                   transition={{ delay: 0.4, duration: 0.5 }}
                   className="grid grid-cols-2 gap-4"
                 >
-                  <Link
-                    to="/medicines"
-                    className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-teal-500/30 hover:bg-slate-800 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Pill size={24} className="text-teal-400" />
-                    </div>
-                    <h3 className="font-semibold text-white group-hover:text-teal-400 transition-colors">
-                      My Medicines
-                    </h3>
-                  </Link>
-
-                  <Link
-                    to="/records"
-                    className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-violet-500/30 hover:bg-slate-800 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Upload size={24} className="text-violet-400" />
-                    </div>
-                    <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors">
-                      Upload Record
-                    </h3>
-                  </Link>
-
-                  <Link
-                    to="/analytics"
-                    className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-cyan-500/30 hover:bg-slate-800 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <BarChart3 size={24} className="text-cyan-400" />
-                    </div>
-                    <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">
-                      Analytics
-                    </h3>
-                  </Link>
-
-                  <Link
-                    to="/history"
-                    className="group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-emerald-500/30 hover:bg-slate-800 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Calendar size={24} className="text-emerald-400" />
-                    </div>
-                    <h3 className="font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                      History
-                    </h3>
-                  </Link>
+                  {quickActions.map((action, i) => (
+                    <Link
+                      key={action.to}
+                      to={action.to}
+                      className={`group p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 ${action.hoverBorder} hover:bg-slate-800 transition-all duration-300 hover:shadow-lg`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl ${action.iconBg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                        <action.icon size={24} className={action.iconColor} />
+                      </div>
+                      <h3 className={`font-semibold text-white ${action.hoverText} transition-colors text-sm md:text-base`}>
+                        {action.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1">{action.desc}</p>
+                    </Link>
+                  ))}
                 </motion.div>
               </div>
 
@@ -269,23 +469,30 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="relative mt-8 pt-8 border-t border-slate-700/50"
+                className="relative mt-8 pt-6 border-t border-slate-700/50"
               >
-                <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span>Account Active</span>
+                    <span className="text-green-400 text-xs font-medium">Account Active</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-slate-400 text-xs">
                     <span>📧</span>
                     <span>{user.email}</span>
                   </div>
                   {user.createdAt && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs">
                       <span>📅</span>
-                      <span>Member since {new Date(user.createdAt).getFullYear()}</span>
+                      <span>Member since {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                     </div>
                   )}
+                  <Link
+                    to="/profile"
+                    className="ml-auto flex items-center gap-1.5 text-xs text-teal-400 hover:text-teal-300 transition-colors group"
+                  >
+                    <span>View Profile</span>
+                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
                 </div>
               </motion.div>
             </motion.div>
@@ -476,15 +683,18 @@ export default function Home() {
                 transition={{ delay: index * 0.1 }}
                 className="group relative bg-slate-900/50 backdrop-blur p-8 rounded-3xl border border-slate-800/50 hover:border-teal-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5"
               >
-                <div className="w-14 h-14 rounded-2xl bg-teal-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <feature.icon size={28} className="text-teal-400" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative">
+                  <div className={`w-14 h-14 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                    <feature.icon size={28} className={feature.iconColor} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3 text-slate-100 group-hover:text-teal-400 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-400 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-slate-100 group-hover:text-teal-400 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed">
-                  {feature.description}
-                </p>
               </motion.div>
             ))}
           </div>
