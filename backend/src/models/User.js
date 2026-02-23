@@ -128,6 +128,16 @@ const userSchema = new mongoose.Schema(
       enum: ["none", "vegetarian", "non-vegetarian", "vegan", "keto", "other"],
     },
 
+    // ── Password Reset ──
+    passwordResetOTP: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
+
     avatar: {
       type: String,
       default: "",
