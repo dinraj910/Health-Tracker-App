@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useMedicineReminders } from '../hooks/useMedicineReminders';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import MobileNav from '../components/layout/MobileNav';
@@ -10,6 +11,9 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Initialize medicine reminder notifications globally
+  useMedicineReminders();
 
   // Handle logout
   const handleLogout = async () => {
@@ -64,7 +68,7 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-[280px]">
         {/* Topbar */}
         <Topbar
           onMenuClick={() => setSidebarOpen(true)}

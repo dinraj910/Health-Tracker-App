@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Heart,
   Pill,
@@ -23,13 +23,19 @@ import {
   Frown,
   Meh,
   Angry,
-  Laugh
+  Laugh,
+  Check,
+  X,
+  Bell,
+  Timer
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, StatCard, Badge, Button, Loader } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { getDashboardSummary } from '../../services/analyticsService';
 import { saveHealthLog, getTodayLog } from '../../services/healthLogService';
+import { getTodayMedicines } from '../../services/medicineService';
+import { logMedicine } from '../../services/logService';
 
 // ── Mood Config ──
 const MOODS = [
@@ -416,6 +422,241 @@ const VitalsInputModal = ({ isOpen, onClose, onSave, existingLog }) => {
 };
 
 
+// ── Medicine Timeline Component ──
+function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
+  const formatTime12h = (time) => {
+    if (!time) return '';
+    const [h, m] = time.split(':');
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
+  };
+
+  const getTimeStatus = (time) => {
+    const now = new Date();
+    const [hours, minutes] = time.split(':');
+    const medTime = new Date();
+    medTime.setHours(parseInt(hours), parseInt(minutes), 0);
+    const diffMin = (medTime - now) / (1000 * 60);
+
+    if (diffMin < -30) return 'past';
+    if (diffMin <= 30) return 'now';
+    return 'upcoming';
+  };
+
+  const getTimePeriod = (time) => {
+    const hour = parseInt(time.split(':')[0]);
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  };
+
+  // Build timeline items — one entry per medicine per timing
+  const timelineItems = [];
+  medicines.forEach((med) => {
+    (med.timings || []).forEach((timing) => {
+      const log = med.todayLogs?.find(l => l.scheduledTime === timing);
+      timelineItems.push({
+        id: `${med._id}-${timing}`,
+        medicineId: med._id,
+        medicineName: med.medicineName,
+        dosage: med.dosage,
+        category: med.category,
+        color: med.color || '#14b8a6',
+        timing,
+        period: getTimePeriod(timing),
+        status: log?.status || null,
+        timeStatus: getTimeStatus(timing),
+      });
+    });
+  });
+
+  // Sort by timing
+  timelineItems.sort((a, b) => a.timing.localeCompare(b.timing));
+
+  // Find next upcoming dose
+  const nextDose = timelineItems.find(
+    (item) => !item.status && (item.timeStatus === 'upcoming' || item.timeStatus === 'now')
+  );
+
+  // Minutes until next dose
+  const getMinutesUntil = (timing) => {
+    const [h, m] = timing.split(':').map(Number);
+    const target = new Date();
+    target.setHours(h, m, 0, 0);
+    return Math.max(0, Math.round((target - new Date()) / (1000 * 60)));
+  };
+
+  if (medicines.length === 0) return null;
+
+  const periods = ['Morning', 'Afternoon', 'Evening'];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.12 }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+          <Pill size={16} className="text-teal-400" />
+          Today&apos;s Medicine Schedule
+        </h2>
+        <Link
+          to="/today"
+          className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1 transition-colors"
+        >
+          View All <ArrowRight size={12} />
+        </Link>
+      </div>
+
+      {/* Next Dose Banner */}
+      {nextDose && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-3 px-4 py-3 bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-500/25 rounded-2xl flex items-center gap-3"
+        >
+          <div className="w-9 h-9 rounded-xl bg-teal-500/20 flex items-center justify-center">
+            <Timer size={18} className="text-teal-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white">
+              Next: {nextDose.medicineName}
+            </p>
+            <p className="text-xs text-slate-400">
+              {nextDose.timeStatus === 'now'
+                ? `Due now at ${formatTime12h(nextDose.timing)}`
+                : `In ${getMinutesUntil(nextDose.timing)} min · ${formatTime12h(nextDose.timing)}`
+              }
+            </p>
+          </div>
+          {nextDose.timeStatus === 'now' && (
+            <Badge variant="violet" animation="pulse">Due Now</Badge>
+          )}
+        </motion.div>
+      )}
+
+      {/* Timeline */}
+      <Card variant="glass" className="p-4">
+        <div className="space-y-1">
+          {periods.map((period) => {
+            const items = timelineItems.filter((i) => i.period === period);
+            if (items.length === 0) return null;
+
+            return (
+              <div key={period} className="mb-3 last:mb-0">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">
+                  {period === 'Morning' ? '🌅' : period === 'Afternoon' ? '☀️' : '🌙'}{' '}
+                  {period}
+                </p>
+
+                <div className="space-y-2">
+                  {items.map((item) => {
+                    const isTaken = item.status === 'taken';
+                    const isMissed = item.status === 'missed' || item.status === 'skipped';
+                    const isDueNow = !item.status && item.timeStatus === 'now';
+                    const isPending = !item.status && item.timeStatus !== 'past';
+                    const isPast = !item.status && item.timeStatus === 'past';
+
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDueNow
+                            ? 'bg-violet-500/10 border border-violet-500/25'
+                            : isTaken
+                              ? 'bg-green-500/5 border border-green-500/15'
+                              : isMissed
+                                ? 'bg-red-500/5 border border-red-500/15 opacity-60'
+                                : 'bg-slate-800/30 border border-slate-700/30'
+                          }`}
+                      >
+                        {/* Timeline dot */}
+                        <div className="flex flex-col items-center gap-1">
+                          <div className={`w-3 h-3 rounded-full ${isTaken
+                              ? 'bg-green-500'
+                              : isMissed
+                                ? 'bg-red-500'
+                                : isDueNow
+                                  ? 'bg-violet-500 animate-pulse'
+                                  : isPast
+                                    ? 'bg-slate-600'
+                                    : 'bg-slate-500'
+                            }`} />
+                        </div>
+
+                        {/* Time */}
+                        <div className="w-16 shrink-0">
+                          <span className={`text-xs font-mono font-medium ${isDueNow ? 'text-violet-400' : isTaken ? 'text-green-400' : 'text-slate-400'
+                            }`}>
+                            {formatTime12h(item.timing)}
+                          </span>
+                        </div>
+
+                        {/* Medicine Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate ${isMissed ? 'text-slate-500 line-through' : 'text-white'
+                            }`}>
+                            {item.medicineName}
+                          </p>
+                          <p className="text-[11px] text-slate-500">{item.dosage}</p>
+                        </div>
+
+                        {/* Status / Actions */}
+                        {isTaken ? (
+                          <div className="flex items-center gap-1.5 text-xs text-green-400">
+                            <Check size={14} />
+                            <span className="hidden sm:inline">Taken</span>
+                          </div>
+                        ) : isMissed ? (
+                          <div className="flex items-center gap-1.5 text-xs text-red-400">
+                            <X size={14} />
+                            <span className="hidden sm:inline">Missed</span>
+                          </div>
+                        ) : isDueNow || isPending ? (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => onLogMedicine(item.medicineId, 'missed')}
+                              disabled={actionLoading === item.medicineId}
+                              className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 transition-colors disabled:opacity-50"
+                            >
+                              <X size={14} />
+                            </button>
+                            <button
+                              onClick={() => onLogMedicine(item.medicineId, 'taken')}
+                              disabled={actionLoading === item.medicineId}
+                              className="px-3 py-1 rounded-lg bg-teal-500/20 text-teal-400 hover:bg-teal-500/30 text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {actionLoading === item.medicineId ? (
+                                <Loader variant="spinner" size="sm" />
+                              ) : (
+                                <>
+                                  <Check size={12} />
+                                  <span className="hidden sm:inline">Take</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-slate-600">--</span>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+
 // ═══════════════════════════════════════════
 // DASHBOARD COMPONENT
 // ═══════════════════════════════════════════
@@ -427,16 +668,20 @@ function Dashboard() {
   const [todayHealth, setTodayHealth] = useState(null);
   const [showVitalsModal, setShowVitalsModal] = useState(false);
   const [savingMood, setSavingMood] = useState(false);
+  const [todayMedicines, setTodayMedicines] = useState([]);
+  const [medActionLoading, setMedActionLoading] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [dashRes, healthRes] = await Promise.all([
+      const [dashRes, healthRes, medsRes] = await Promise.all([
         getDashboardSummary(),
         getTodayLog(),
+        getTodayMedicines(),
       ]);
       setDashData(dashRes.data);
       setTodayHealth(healthRes.data?.log || null);
+      setTodayMedicines(medsRes.data?.medicines || medsRes.medicines || []);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     } finally {
@@ -562,6 +807,29 @@ function Dashboard() {
             </div>
           </Card>
         </motion.div>
+
+        {/* ── Today's Medicine Schedule ── */}
+        <MedicineTimeline
+          medicines={todayMedicines}
+          actionLoading={medActionLoading}
+          onLogMedicine={async (medicineId, status) => {
+            try {
+              setMedActionLoading(medicineId);
+              await logMedicine(medicineId, {
+                status,
+                timing: new Date().toTimeString().slice(0, 5)
+              });
+              // Re-fetch to update status
+              const medsRes = await getTodayMedicines();
+              setTodayMedicines(medsRes.data?.medicines || medsRes.medicines || []);
+              await fetchData();
+            } catch (err) {
+              console.error('Error logging medicine:', err);
+            } finally {
+              setMedActionLoading(null);
+            }
+          }}
+        />
 
         {/* ── Today's Vitals ── */}
         <motion.div

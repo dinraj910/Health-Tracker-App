@@ -80,8 +80,8 @@ const Sidebar = ({ isOpen, onClose, className }) => {
         }}
         className={cn(
           'fixed left-0 top-0 h-full bg-slate-900 border-r border-slate-700 z-50',
-          'md:relative md:translate-x-0',
-          'transition-all duration-300',
+          'md:fixed md:translate-x-0',
+          'transition-all duration-300 overflow-y-auto',
           className
         )}
       >
