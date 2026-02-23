@@ -1,9 +1,10 @@
-import app from "./src/app.js";
 import dotenv from "dotenv";
-import connectDB from "./src/config/db.js";
 
-// Load environment variables
+// Load environment variables BEFORE any other imports
 dotenv.config();
+
+const { default: app } = await import("./src/app.js");
+const { default: connectDB } = await import("./src/config/db.js");
 
 // Connect to database
 connectDB();
