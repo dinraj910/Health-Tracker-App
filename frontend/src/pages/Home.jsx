@@ -17,14 +17,7 @@ import {
   User,
   Settings,
   LogOut,
-  ChevronDown,
-  Search,
-  Moon,
-  Bell,
-  X,
-  Zap,
-  TrendingUp,
-  Star
+  ChevronDown
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -32,8 +25,6 @@ export default function Home() {
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const profileRef = useRef(null);
 
   // Close dropdown on outside click
@@ -589,8 +580,8 @@ export default function Home() {
                       {/* Sidebar Mock */}
                       <div className="hidden md:block col-span-1 bg-slate-800/50 rounded-2xl p-4">
                         <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl mb-6" />
-                        {[1, 2, 3, 4, 5].map(i => (
-                          <div key={i} className="h-8 bg-slate-700/50 rounded-lg mb-2" />
+                        {[1, 2, 3, 4, 5].map((_, idx) => (
+                          <div key={idx} className="h-8 bg-slate-700/50 rounded-lg mb-2" />
                         ))}
                       </div>
 

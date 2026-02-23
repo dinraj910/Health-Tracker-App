@@ -60,7 +60,6 @@ const Topbar = ({
   const [notifications] = useState(3);
   const profileRef = useRef(null);
   const settingsRef = useRef(null);
-  const searchRef = useRef(null);
   const searchInputRef = useRef(null);
 
   // Get greeting based on time
