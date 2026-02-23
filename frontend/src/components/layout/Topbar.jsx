@@ -55,11 +55,13 @@ const Topbar = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [notifications] = useState(3);
   const profileRef = useRef(null);
   const settingsRef = useRef(null);
+  const notificationsRef = useRef(null);
   const searchInputRef = useRef(null);
 
   // Get greeting based on time
@@ -128,6 +130,9 @@ const Topbar = ({
       }
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setIsSettingsOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -202,18 +207,79 @@ const Topbar = ({
           {/* Right Section */}
           <div className="flex items-center gap-2 md:gap-3">
             {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative text-slate-400 hover:text-white"
-            >
-              <Bell size={20} />
-              {notifications > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-[10px] font-bold flex items-center justify-center bg-red-500 text-white rounded-full ring-2 ring-slate-900 animate-pulse">
-                  {notifications}
-                </span>
-              )}
-            </Button>
+            <div className="relative" ref={notificationsRef}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setIsNotificationsOpen(!isNotificationsOpen);
+                  setIsProfileOpen(false);
+                  setIsSettingsOpen(false);
+                }}
+                className={cn(
+                  'relative text-slate-400 hover:text-white transition-all duration-200',
+                  isNotificationsOpen && 'text-teal-400 bg-slate-800'
+                )}
+              >
+                <Bell size={20} />
+                {notifications > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-[10px] font-bold flex items-center justify-center bg-red-500 text-white rounded-full ring-2 ring-slate-900 animate-pulse">
+                    {notifications}
+                  </span>
+                )}
+              </Button>
+
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-80 bg-slate-800/95 backdrop-blur-xl border border-slate-600/70 rounded-2xl shadow-2xl shadow-black/40 py-2 z-50 overflow-hidden"
+                  >
+                    <div className="px-4 py-3 border-b border-slate-700/70 flex items-center justify-between">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Notifications</p>
+                      <span className="text-[10px] font-medium text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">3 New</span>
+                    </div>
+
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {[
+                        { id: 1, title: 'Medicine Reminder', desc: 'Time to take Metformin (500mg)', time: '10 min ago', status: 'due', icon: Pill, color: 'text-violet-400', bg: 'bg-violet-500/10' },
+                        { id: 2, title: 'Dose Taken', desc: 'Aspirin marked as taken', time: '1 hour ago', status: 'done', icon: Check, color: 'text-green-400', bg: 'bg-green-500/10' },
+                        { id: 3, title: 'Missed Dose', desc: 'Vitamin D3 was skipped', time: '4 hours ago', status: 'missed', icon: X, color: 'text-red-400', bg: 'bg-red-500/10' },
+                      ].map((notif) => (
+                        <button
+                          key={notif.id}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-700/40 transition-colors flex gap-3 group border-b border-slate-700/50 last:border-0"
+                        >
+                          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', notif.bg)}>
+                            <notif.icon size={18} className={notif.color} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white group-hover:text-teal-300 transition-colors">{notif.title}</p>
+                            <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{notif.desc}</p>
+                            <span className="text-[10px] text-slate-500 mt-1 block font-medium">{notif.time}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="px-2 pt-1">
+                      <button
+                        onClick={() => {
+                          navigate('/today');
+                          setIsNotificationsOpen(false);
+                        }}
+                        className="w-full py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-teal-500/10 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        View Today&apos;s Schedule <ArrowRight size={12} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Settings Dropdown */}
             <div className="relative hidden md:block" ref={settingsRef}>

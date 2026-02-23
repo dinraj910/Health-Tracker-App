@@ -8,10 +8,10 @@ export const getTodayMedicines = async (date) => {
 };
 
 // Take a medicine
-export const takeMedicine = async (medicineId, { timing, notes } = {}) => {
+export const takeMedicine = async (medicineId, { scheduledTime, notes } = {}) => {
   const response = await api.post('/log/take', {
     medicineId,
-    timing,
+    scheduledTime,
     notes,
     takenAt: new Date().toISOString()
   });
@@ -19,20 +19,21 @@ export const takeMedicine = async (medicineId, { timing, notes } = {}) => {
 };
 
 // Miss a medicine
-export const missMedicine = async (medicineId, { reason } = {}) => {
+export const missMedicine = async (medicineId, { scheduledTime, reason } = {}) => {
   const response = await api.post('/log/miss', {
     medicineId,
+    scheduledTime,
     reason
   });
   return response.data;
 };
 
 // Log a medicine (generic — delegates to take/miss)
-export const logMedicine = async (medicineId, { status, timing, notes }) => {
-  if (status === 'missed') {
-    return missMedicine(medicineId, { reason: notes });
+export const logMedicine = async (medicineId, { status, scheduledTime, notes }) => {
+  if (status === 'missed' || status === 'skipped') {
+    return missMedicine(medicineId, { scheduledTime, reason: notes, status });
   }
-  return takeMedicine(medicineId, { timing, notes });
+  return takeMedicine(medicineId, { scheduledTime, notes });
 };
 
 // Get log history with date range

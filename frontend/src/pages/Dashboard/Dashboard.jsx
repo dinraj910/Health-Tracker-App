@@ -581,7 +581,7 @@ function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
               ) : isPending ? (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => onLogMedicine(item.medicineId, 'missed')}
+                    onClick={() => onLogMedicine(item.medicineId, 'missed', item.timing)}
                     disabled={actionLoading === item.medicineId}
                     className="flex-1 py-3 rounded-xl border-2 border-red-500/30 text-red-400 hover:bg-red-500/15 font-semibold text-base transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
@@ -589,7 +589,7 @@ function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
                     Skip
                   </button>
                   <button
-                    onClick={() => onLogMedicine(item.medicineId, 'taken')}
+                    onClick={() => onLogMedicine(item.medicineId, 'taken', item.timing)}
                     disabled={actionLoading === item.medicineId}
                     className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-base hover:from-teal-400 hover:to-cyan-400 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20"
                   >
@@ -780,12 +780,12 @@ function Dashboard() {
         <MedicineTimeline
           medicines={todayMedicines}
           actionLoading={medActionLoading}
-          onLogMedicine={async (medicineId, status) => {
+          onLogMedicine={async (medicineId, status, scheduledTime) => {
             try {
               setMedActionLoading(medicineId);
               await logMedicine(medicineId, {
                 status,
-                timing: new Date().toTimeString().slice(0, 5)
+                scheduledTime
               });
               // Re-fetch to update status
               const medsRes = await getTodayMedicines();
