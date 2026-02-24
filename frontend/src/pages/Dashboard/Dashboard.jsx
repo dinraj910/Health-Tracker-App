@@ -8,76 +8,24 @@ import {
   Activity,
   Plus,
   Droplets,
-  Moon,
-  Footprints,
-  ThermometerSun,
   Zap,
-  Brain,
   AlertCircle,
   CheckCircle2,
   Clock,
-  Flame,
   FileText,
   ArrowRight,
-  Smile,
-  Frown,
-  Meh,
-  Angry,
-  Laugh,
   Check,
   X,
-  Bell,
-  Timer
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import { Card, StatCard, Badge, Button, Loader } from '../../components/ui';
+import { Card, Badge, Button, Loader } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { getDashboardSummary } from '../../services/analyticsService';
 import { saveHealthLog, getTodayLog } from '../../services/healthLogService';
 import { getTodayMedicines } from '../../services/medicineService';
 import { logMedicine } from '../../services/logService';
 
-// ── Mood Config ──
-const MOODS = [
-  { value: 'terrible', icon: Angry, label: 'Terrible', color: 'text-red-400', bg: 'bg-red-500/20' },
-  { value: 'bad', icon: Frown, label: 'Bad', color: 'text-orange-400', bg: 'bg-orange-500/20' },
-  { value: 'okay', icon: Meh, label: 'Okay', color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
-  { value: 'good', icon: Smile, label: 'Good', color: 'text-teal-400', bg: 'bg-teal-500/20' },
-  { value: 'great', icon: Laugh, label: 'Great', color: 'text-green-400', bg: 'bg-green-500/20' },
-];
 
-// ── Circular Progress Ring ──
-const ProgressRing = ({ value = 0, max = 100, size = 80, strokeWidth = 6, color = '#14b8a6', label, subLabel }) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const percent = Math.min(value / max, 1);
-  const offset = circumference * (1 - percent);
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth}
-        />
-        <motion.circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke={color} strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-        <span className="text-lg font-bold text-white">{Math.round(percent * 100)}%</span>
-      </div>
-      {label && <span className="text-xs font-medium text-slate-300">{label}</span>}
-      {subLabel && <span className="text-[10px] text-slate-500">{subLabel}</span>}
-    </div>
-  );
-};
 
 // ── Quick Vitals Input Modal ──
 const VitalsInputModal = ({ isOpen, onClose, onSave, existingLog }) => {
@@ -626,7 +574,6 @@ function Dashboard() {
   const [dashData, setDashData] = useState(null);
   const [todayHealth, setTodayHealth] = useState(null);
   const [showVitalsModal, setShowVitalsModal] = useState(false);
-  const [savingMood, setSavingMood] = useState(false);
   const [todayMedicines, setTodayMedicines] = useState([]);
   const [medActionLoading, setMedActionLoading] = useState(null);
 
@@ -652,18 +599,7 @@ function Dashboard() {
     fetchData();
   }, [fetchData]);
 
-  // Save mood
-  const handleMoodSelect = async (mood) => {
-    setSavingMood(true);
-    try {
-      const result = await saveHealthLog({ mood });
-      setTodayHealth(result.data?.log || null);
-    } catch (err) {
-      console.error('Error saving mood:', err);
-    } finally {
-      setSavingMood(false);
-    }
-  };
+
 
   // Save vitals
   const handleSaveVitals = async (vitalsData) => {
@@ -705,9 +641,7 @@ function Dashboard() {
     );
   }
 
-  const medProgress = dashData?.todayProgress;
   const bpInfo = getBpInfo(todayHealth);
-  const currentMood = MOODS.find(m => m.value === todayHealth?.mood);
 
   // Medicine counts from actual fetched medicines
   const totalMeds = todayMedicines.length;
@@ -733,7 +667,6 @@ function Dashboard() {
                 {totalMeds > 0
                   ? `You have ${totalMeds} medicine${totalMeds > 1 ? 's' : ''} today — ${takenCount} taken, ${pendingCount} remaining.`
                   : 'No medicines scheduled for today.'}
-                {dashData?.streak > 0 ? ` 🔥 ${dashData.streak} day streak!` : ''}
               </p>
             </div>
             <div className="hidden md:flex items-center gap-2 text-sm text-slate-400">
@@ -889,127 +822,7 @@ function Dashboard() {
           )}
         </motion.div>
 
-        {/* ── Mood Widget ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card variant="glass" className="p-5">
-            <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-              <Brain size={16} className="text-violet-400" />
-              How are you feeling?
-            </h2>
-            <div className="flex justify-around">
-              {MOODS.map(mood => {
-                const MoodIcon = mood.icon;
-                const isSelected = currentMood?.value === mood.value;
-                return (
-                  <motion.button
-                    key={mood.value}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleMoodSelect(mood.value)}
-                    disabled={savingMood}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all
-                      ${isSelected ? `${mood.bg} border border-current ${mood.color}` : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    <MoodIcon size={24} />
-                    <span className="text-[10px] font-medium">{mood.label}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </Card>
-        </motion.div>
 
-        {/* ── Stats Row ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-3"
-        >
-          <StatCard
-            title="Active Meds"
-            value={dashData?.activeMedicines || 0}
-            icon={<Pill size={18} />}
-            color="teal"
-          />
-          <StatCard
-            title="Weekly Adherence"
-            value={`${dashData?.weeklyAdherence || 0}%`}
-            icon={<TrendingUp size={18} />}
-            color="green"
-          />
-          <StatCard
-            title="Streak"
-            value={`${dashData?.streak || 0} days`}
-            icon={<Flame size={18} />}
-            color="orange"
-          />
-          <StatCard
-            title="Sleep"
-            value={todayHealth?.sleepHours ? `${todayHealth.sleepHours}h` : '--'}
-            icon={<Moon size={18} />}
-            color="purple"
-          />
-        </motion.div>
-
-        {/* ── Wellness Snapshot ── */}
-        {todayHealth && (todayHealth.sleepHours || todayHealth.waterIntake || todayHealth.stepsCount || todayHealth.exerciseMinutes) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-              <ThermometerSun size={16} className="text-orange-400" />
-              Wellness Snapshot
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {todayHealth.sleepHours != null && (
-                <Card variant="glass" className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Moon size={14} className="text-indigo-400" />
-                    <span className="text-xs text-slate-400">Sleep</span>
-                  </div>
-                  <p className="text-base font-bold text-white">{todayHealth.sleepHours}h</p>
-                  {todayHealth.sleepQuality && (
-                    <span className="text-xs text-slate-400 capitalize">{todayHealth.sleepQuality}</span>
-                  )}
-                </Card>
-              )}
-              {todayHealth.waterIntake != null && (
-                <Card variant="glass" className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Droplets size={14} className="text-sky-400" />
-                    <span className="text-xs text-slate-400">Water</span>
-                  </div>
-                  <p className="text-base font-bold text-white">{todayHealth.waterIntake} glasses</p>
-                </Card>
-              )}
-              {todayHealth.stepsCount != null && (
-                <Card variant="glass" className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Footprints size={14} className="text-violet-400" />
-                    <span className="text-xs text-slate-400">Steps</span>
-                  </div>
-                  <p className="text-base font-bold text-white">{todayHealth.stepsCount.toLocaleString()}</p>
-                </Card>
-              )}
-              {todayHealth.exerciseMinutes != null && (
-                <Card variant="glass" className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap size={14} className="text-green-400" />
-                    <span className="text-xs text-slate-400">Exercise</span>
-                  </div>
-                  <p className="text-base font-bold text-white">{todayHealth.exerciseMinutes} min</p>
-                </Card>
-              )}
-            </div>
-          </motion.div>
-        )}
 
         {/* ── Quick Actions ── */}
         <motion.div

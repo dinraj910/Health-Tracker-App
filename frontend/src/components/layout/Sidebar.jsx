@@ -27,10 +27,9 @@ const navigation = [
   { name: 'Profile', href: '/profile', icon: User }
 ];
 
-const Sidebar = ({ isOpen, onClose, className }) => {
+const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse, className }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -116,7 +115,7 @@ const Sidebar = ({ isOpen, onClose, className }) => {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={() => onToggleCollapse?.()}
               className="hidden md:flex text-slate-400 hover:text-white"
             >
               <ChevronLeft

@@ -9,6 +9,7 @@ import Loader from '../components/ui/Loader';
 
 const DashboardLayout = ({ children, title, fullWidth = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -57,6 +58,8 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
         <Sidebar
           isOpen={true}
           onClose={() => { }}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
       </div>
 
@@ -68,7 +71,7 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-[280px]">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-[80px]' : 'md:ml-[280px]'}`}>
         {/* Topbar */}
         <Topbar
           onMenuClick={() => setSidebarOpen(true)}

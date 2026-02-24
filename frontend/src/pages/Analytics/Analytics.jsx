@@ -11,6 +11,7 @@ import {
   Footprints,
   Pill,
   BarChart3,
+  ThermometerSun,
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Badge, Loader } from '../../components/ui';
@@ -163,11 +164,12 @@ function Analytics() {
     fetchAll();
   }, [fetchAll]);
 
-  // Derive sparkline data
   const bpSystolicSpark = vitals?.bloodPressure?.map(d => d.systolic) || [];
   const heartRateSpark = vitals?.heartRate?.map(d => d.value) || [];
   const weightSpark = vitals?.weight?.map(d => d.value) || [];
   const oxygenSpark = vitals?.oxygenLevel?.map(d => d.value) || [];
+  const bloodSugarSpark = vitals?.bloodSugar?.map(d => d.fasting) || [];
+  const bodyTempSpark = vitals?.bodyTemp?.map(d => d.value) || [];
   const sleepSpark = wellness?.sleep?.map(d => d.hours) || [];
   const stepsSpark = wellness?.steps?.map(d => d.value) || [];
   const waterSpark = wellness?.water?.map(d => d.value) || [];
@@ -177,6 +179,8 @@ function Analytics() {
   const latestHr = vitals?.heartRate?.length > 0 ? vitals.heartRate[vitals.heartRate.length - 1] : null;
   const latestWeight = vitals?.weight?.length > 0 ? vitals.weight[vitals.weight.length - 1] : null;
   const latestO2 = vitals?.oxygenLevel?.length > 0 ? vitals.oxygenLevel[vitals.oxygenLevel.length - 1] : null;
+  const latestBS = vitals?.bloodSugar?.length > 0 ? vitals.bloodSugar[vitals.bloodSugar.length - 1] : null;
+  const latestTemp = vitals?.bodyTemp?.length > 0 ? vitals.bodyTemp[vitals.bodyTemp.length - 1] : null;
   const latestSleep = wellness?.sleep?.length > 0 ? wellness.sleep[wellness.sleep.length - 1] : null;
   const latestSteps = wellness?.steps?.length > 0 ? wellness.steps[wellness.steps.length - 1] : null;
   const latestMood = wellness?.mood?.length > 0 ? wellness.mood[wellness.mood.length - 1] : null;
@@ -281,7 +285,7 @@ function Analytics() {
         </motion.div>
 
         {/* ── Vitals Trends ── */}
-        {vitals && (bpSystolicSpark.length > 0 || heartRateSpark.length > 0 || weightSpark.length > 0 || oxygenSpark.length > 0) && (
+        {vitals && (bpSystolicSpark.length > 0 || heartRateSpark.length > 0 || weightSpark.length > 0 || oxygenSpark.length > 0 || bloodSugarSpark.length > 0 || bodyTempSpark.length > 0) && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
               <Heart size={16} className="text-red-400" />
@@ -331,6 +335,30 @@ function Analytics() {
                   sparkColor="#3b82f6"
                   status={latestO2.value >= 95 ? 'Normal' : 'Low'}
                   statusColor={latestO2.value >= 95 ? 'success' : 'danger'}
+                />
+              )}
+              {latestBS && (
+                <VitalTrendCard
+                  icon={Droplets} iconColor="text-amber-400" iconBg="bg-amber-500/15"
+                  title="Blood Sugar (Fasting)"
+                  latestValue={latestBS.fasting}
+                  unit="mg/dL"
+                  sparkData={bloodSugarSpark}
+                  sparkColor="#f59e0b"
+                  status={latestBS.fasting <= 100 ? 'Normal' : latestBS.fasting <= 125 ? 'Prediabetic' : 'High'}
+                  statusColor={latestBS.fasting <= 100 ? 'success' : latestBS.fasting <= 125 ? 'warning' : 'danger'}
+                />
+              )}
+              {latestTemp && (
+                <VitalTrendCard
+                  icon={ThermometerSun} iconColor="text-orange-400" iconBg="bg-orange-500/15"
+                  title="Body Temperature"
+                  latestValue={latestTemp.value}
+                  unit="°F"
+                  sparkData={bodyTempSpark}
+                  sparkColor="#f97316"
+                  status={latestTemp.value >= 97 && latestTemp.value <= 99.5 ? 'Normal' : latestTemp.value > 99.5 ? 'Fever' : 'Low'}
+                  statusColor={latestTemp.value >= 97 && latestTemp.value <= 99.5 ? 'success' : 'danger'}
                 />
               )}
             </div>
