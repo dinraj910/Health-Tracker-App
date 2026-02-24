@@ -2,7 +2,7 @@
 
 > **Full-stack Health Tracker App** — React + Vite + TailwindCSS (Frontend) · Express + MongoDB + JWT (Backend)
 >
-> Last Updated: February 24, 2026
+> Last Updated: February 24, 2026 (Status: Dashboard Redesigned & Vitals Analytics Enhanced)
 
 ---
 
@@ -138,19 +138,19 @@ MediTrack is a comprehensive health management platform that enables users to:
 | # | Task | Status |
 |---|------|--------|
 | 4.1 | Dashboard — Time-based greeting | ✅ Done |
-| 4.2 | Dashboard — Health progress rings (adherence, water, steps) | ✅ Done |
+| 4.2 | Dashboard — Health progress rings (adherence, water, steps) | ⚠️ Removed |
 | 4.3 | Dashboard — Today's vitals card display | ✅ Done |
-| 4.4 | Dashboard — Mood selector widget | ✅ Done |
-| 4.5 | Dashboard — Stats row (active meds, weekly adherence, streak, sleep) | ✅ Done |
-| 4.6 | Dashboard — Wellness snapshot (sleep, water, steps, exercise) | ✅ Done |
+| 4.4 | Dashboard — Mood selector widget | ⚠️ Removed |
+| 4.5 | Dashboard — Stats row (active meds, weekly adherence, streak, sleep) | ⚠️ Removed |
+| 4.6 | Dashboard — Wellness snapshot (sleep, water, steps, exercise) | ⚠️ Removed |
 | 4.7 | Dashboard — Quick vitals input modal | ✅ Done |
 | 4.8 | Analytics page — Adherence trends chart | ✅ Done |
-| 4.9 | Analytics page — Vitals history graphs | ✅ Done |
+| 4.9 | Analytics page — Vitals history graphs (BP, HR, SpO2, Temp, Sugar) | ✅ Done |
 | 4.10 | Analytics page — Summary statistics | ✅ Done |
-| 4.11 | Dashboard — BMI calculator with status indicator | 🔲 To Do |
+| 4.11 | Dashboard — BMI calculator with status indicator | ✅ Done |
 | 4.12 | Dashboard — Weekly/monthly health score | 🔲 To Do |
 | 4.13 | Analytics — Export health report as PDF | 🔲 To Do |
-| 4.14 | Analytics — Compare metrics over custom date ranges | 🔲 To Do |
+| 4.14 | Analytics — Compare metrics over custom date ranges | ✅ Done |
 
 ---
 
@@ -296,15 +296,15 @@ MediTrack is a comprehensive health management platform that enables users to:
 Phase 1: Foundation          ████████████████████ 100%  (12/12)
 Phase 2: Auth & Security     ████████████████░░░░  75%  (12/16)
 Phase 3: Core Features       ████████████████████ 100%  (24/24)
-Phase 4: Dashboard           ██████████████░░░░░░  71%  (10/14)
-Phase 5: UI/UX Polish        █████████████░░░░░░░  68%  (13/19)
+Phase 4: Dashboard           ██████████████████░░  90%  (13/14)
+Phase 5: UI/UX Polish        ████████████████░░░░  80%  (15/19)
 Phase 6: Medicine API        ░░░░░░░░░░░░░░░░░░░░   0%  (0/9)
 Phase 7: AI & Automation     ░░░░░░░░░░░░░░░░░░░░   0%  (0/14)
-Phase 8: Notifications       ██░░░░░░░░░░░░░░░░░░  12%  (1/8)
+Phase 8: Notifications       █████░░░░░░░░░░░░░░░  25%  (2/8)
 Phase 9: Social & Export     ░░░░░░░░░░░░░░░░░░░░   0%  (0/7)
 Phase 10: Deployment         ██░░░░░░░░░░░░░░░░░░   7%  (1/15)
 ───────────────────────────────────────────────────────
-OVERALL                      ██████████░░░░░░░░░░  52%  (73/142)
+OVERALL                      ██████████████░░░░░░  70%  (79/142)
 ```
 
 ---
