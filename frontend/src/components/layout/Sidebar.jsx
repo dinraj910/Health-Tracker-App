@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -87,19 +87,20 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse, class
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700">
-            <motion.div
-              animate={{ opacity: isCollapsed ? 0 : 1 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-xl flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Activity className="w-5 h-5 text-slate-900" />
               </div>
               {!isCollapsed && (
-                <h1 className="text-lg font-bold text-white">
+                <motion.h1
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-lg font-bold text-white"
+                >
                   MediTrack
-                </h1>
+                </motion.h1>
               )}
-            </motion.div>
+            </div>
 
             {/* Mobile close button */}
             <Button
@@ -128,7 +129,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse, class
             </Button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -139,7 +139,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse, class
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-2xl font-medium text-sm transition-all duration-200 relative group',
+                    'flex items-center gap-3 py-2.5 rounded-2xl font-medium text-sm transition-all duration-200 relative group',
+                    isCollapsed ? 'justify-center px-0' : 'px-3',
                     isActive
                       ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -148,17 +149,16 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse, class
                   <Icon
                     size={20}
                     className={cn(
-                      'transition-colors duration-200',
+                      'transition-colors duration-200 flex-shrink-0',
                       isActive && 'drop-shadow-sm'
                     )}
                   />
 
-                  <motion.span
-                    animate={{ opacity: isCollapsed ? 0 : 1 }}
-                    className="truncate"
-                  >
-                    {item.name}
-                  </motion.span>
+                  {!isCollapsed && (
+                    <span className="truncate">
+                      {item.name}
+                    </span>
+                  )}
 
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
