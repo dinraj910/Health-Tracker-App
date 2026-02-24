@@ -41,9 +41,11 @@ const Today = () => {
   const handleLogMedicine = async (medicineId, status) => {
     try {
       setActionLoading(medicineId);
+      const medicine = medicines.find(m => m._id === medicineId);
+      const scheduledTime = medicine?.timings?.[0] || new Date().toTimeString().slice(0, 5);
       await logMedicine(medicineId, {
         status,
-        timing: new Date().toTimeString().slice(0, 5)
+        scheduledTime
       });
 
       // Update local state
