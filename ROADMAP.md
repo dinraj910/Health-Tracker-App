@@ -171,7 +171,7 @@ MediTrack is a comprehensive health management platform that enables users to:
 | 5.10 | Dark theme (current default) | ✅ Done |
 | 5.11 | Light theme toggle | 🔲 To Do |
 | 5.12 | Search bar — Search medicines & records by keyword (actual data search) | 🔲 To Do |
-| 5.13 | Toast notifications system (success/error/info messages) | 🔲 To Do |
+| 5.13 | Toast notifications system (success/error/info messages) | ✅ Done |
 | 5.14 | Skeleton loading states for all data-fetching pages | 🔲 To Do |
 | 5.15 | Empty states with illustrations (no medicines, no records, etc.) | 🔲 To Do |
 | 5.16 | Onboarding flow for new users (welcome tour / setup wizard) | 🔲 To Do |
@@ -297,14 +297,14 @@ Phase 1: Foundation          █████████████████
 Phase 2: Auth & Security     ████████████████░░░░  75%  (12/16)
 Phase 3: Core Features       ████████████████████ 100%  (24/24)
 Phase 4: Dashboard           ██████████████░░░░░░  71%  (10/14)
-Phase 5: UI/UX Polish        ████████████░░░░░░░░  63%  (12/19)
+Phase 5: UI/UX Polish        █████████████░░░░░░░  68%  (13/19)
 Phase 6: Medicine API        ░░░░░░░░░░░░░░░░░░░░   0%  (0/9)
 Phase 7: AI & Automation     ░░░░░░░░░░░░░░░░░░░░   0%  (0/14)
 Phase 8: Notifications       ██░░░░░░░░░░░░░░░░░░  12%  (1/8)
 Phase 9: Social & Export     ░░░░░░░░░░░░░░░░░░░░   0%  (0/7)
 Phase 10: Deployment         ██░░░░░░░░░░░░░░░░░░   7%  (1/15)
 ───────────────────────────────────────────────────────
-OVERALL                      ██████████░░░░░░░░░░  51%  (72/142)
+OVERALL                      ██████████░░░░░░░░░░  52%  (73/142)
 ```
 
 ---
@@ -314,10 +314,9 @@ OVERALL                      ██████████░░░░░░░
 Based on development cycle maturity and resume impact, here's the **recommended order**:
 
 ### 🔥 Immediate (This Week)
-1. **Toast notification system** (5.13) — Essential UX
-2. **Actual search functionality** (5.12) — Search medicines/records by keyword
-3. **404 and error pages** (5.19) — Polish
-4. **Light theme toggle** (5.11) — User preference
+1. **Actual search functionality** (5.12) — Search medicines/records by keyword
+2. **404 and error pages** (5.19) — Polish
+3. **Light theme toggle** (5.11) — User preference
 
 ### ⚡ Short-Term (Next 2 Weeks)
 5. **Medicine API integration** (6.1–6.3) — OpenFDA drug search + autocomplete

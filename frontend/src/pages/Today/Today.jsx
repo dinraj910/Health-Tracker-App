@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Badge, Loader, StatCard } from '../../components/ui';
-import { getTodayMedicines, logMedicine } from '../../services/logService';
+import { getTodayMedicines } from '../../services/medicineService';
+import { logMedicine } from '../../services/logService';
 
 const Today = () => {
   const [medicines, setMedicines] = useState([]);
@@ -220,12 +221,12 @@ const Today = () => {
                       <div className="flex items-center gap-4">
                         {/* Icon */}
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${medicine.todayStatus === 'taken'
-                            ? 'bg-green-500/20 border border-green-500/30'
-                            : medicine.todayStatus === 'missed'
-                              ? 'bg-red-500/20 border border-red-500/30'
-                              : timeStatus === 'now'
-                                ? 'bg-violet-500/20 border border-violet-500/30 animate-pulse'
-                                : 'bg-slate-700 border border-slate-600'
+                          ? 'bg-green-500/20 border border-green-500/30'
+                          : medicine.todayStatus === 'missed'
+                            ? 'bg-red-500/20 border border-red-500/30'
+                            : timeStatus === 'now'
+                              ? 'bg-violet-500/20 border border-violet-500/30 animate-pulse'
+                              : 'bg-slate-700 border border-slate-600'
                           }`}>
                           {medicine.todayStatus === 'taken' ? (
                             <Check size={24} className="text-green-400" />
@@ -242,8 +243,8 @@ const Today = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className={`font-semibold ${medicine.todayStatus === 'missed'
-                                ? 'text-slate-400 line-through'
-                                : 'text-white'
+                              ? 'text-slate-400 line-through'
+                              : 'text-white'
                               }`}>
                               {medicine.medicineName}
                             </h3>

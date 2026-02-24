@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../context/ToastContext";
 import { registerUser, googleAuth } from "../../services/authService";
 
 export default function Register() {
@@ -13,22 +14,21 @@ export default function Register() {
     bloodGroup: "O+"
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const googleBtnRef = useRef(null);
 
   // Google Sign-Up callback
   const handleGoogleResponse = useCallback(async (response) => {
-    setError("");
     setLoading(true);
     try {
       const data = await googleAuth(response.credential);
       login(data);
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Google sign-up failed. Please try again.");
+      toast.error(err.response?.data?.message || "Google sign-up failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,14 +72,13 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const data = await registerUser(formData);
       login(data);
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      toast.error(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -102,12 +101,7 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
-            {error}
-          </div>
-        )}
+
 
         {/* Register Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

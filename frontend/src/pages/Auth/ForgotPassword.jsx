@@ -1,29 +1,27 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
+import { useToast } from "../../context/ToastContext";
 import { forgotPassword } from "../../services/authService";
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
-        setSuccess("");
         setLoading(true);
         try {
             const data = await forgotPassword(email);
-            setSuccess(data.message);
+            toast.success(data.message);
             // Navigate to reset page after a short delay
             setTimeout(() => {
                 navigate("/reset-password", { state: { email } });
             }, 1500);
         } catch (err) {
-            setError(err.response?.data?.message || "Something went wrong. Please try again.");
+            toast.error(err.response?.data?.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -46,19 +44,7 @@ export default function ForgotPassword() {
                     </p>
                 </div>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
-                        {error}
-                    </div>
-                )}
 
-                {/* Success Message */}
-                {success && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 px-4 py-3 rounded-xl text-sm">
-                        {success}
-                    </div>
-                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">

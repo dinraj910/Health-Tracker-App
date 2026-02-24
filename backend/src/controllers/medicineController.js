@@ -209,8 +209,17 @@ export const getTodayMedicines = asyncHandler(async (req, res) => {
       (log) => log.medicineId._id.toString() === med._id.toString()
     );
 
+    // Derive a simple status for the frontend
+    let todayStatus = null;
+    if (logs.length > 0) {
+      if (logs.every((l) => l.status === "taken")) todayStatus = "taken";
+      else if (logs.some((l) => l.status === "missed" || l.status === "skipped"))
+        todayStatus = "missed";
+    }
+
     return {
       ...med.toObject(),
+      todayStatus,
       todayLogs: logs,
     };
   });

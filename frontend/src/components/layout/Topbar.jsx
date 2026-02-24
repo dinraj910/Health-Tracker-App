@@ -20,6 +20,7 @@ import {
   Shield,
   Lock,
   Heart,
+  Check,
   X,
   ArrowRight,
   Clock,

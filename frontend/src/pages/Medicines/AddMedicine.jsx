@@ -13,12 +13,13 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Input, Badge } from '../../components/ui';
+import { useToast } from '../../context/ToastContext';
 import { createMedicine } from '../../services/medicineService';
 
 const AddMedicine = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     medicineName: '',
@@ -114,7 +115,6 @@ const AddMedicine = () => {
 
     try {
       setLoading(true);
-      setError('');
 
       await createMedicine({
         medicineName: formData.medicineName,
@@ -129,11 +129,10 @@ const AddMedicine = () => {
         remindersEnabled: formData.remindersEnabled
       });
 
-      navigate('/medicines', {
-        state: { message: 'Medicine added successfully!' }
-      });
+      toast.success('Medicine added successfully!');
+      navigate('/medicines');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add medicine. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to add medicine. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -162,16 +161,7 @@ const AddMedicine = () => {
           </Card.Header>
 
           <Card.Content>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3"
-              >
-                <AlertCircle className="text-red-400" size={20} />
-                <p className="text-red-400">{error}</p>
-              </motion.div>
-            )}
+
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Medicine Name */}
@@ -209,8 +199,8 @@ const AddMedicine = () => {
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, frequency: option.value }))}
                       className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${formData.frequency === option.value
-                          ? 'bg-teal-500 text-white'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                        ? 'bg-teal-500 text-white'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
                         }`}
                     >
                       {option.label}
@@ -234,8 +224,8 @@ const AddMedicine = () => {
                       onClick={() => addTiming(time)}
                       disabled={formData.timings.includes(time)}
                       className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${formData.timings.includes(time)
-                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                        ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
                         }`}
                     >
                       {formatTime(time)}

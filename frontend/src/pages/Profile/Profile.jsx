@@ -32,6 +32,7 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Button, Input, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../context/ToastContext';
 import { updateProfile, updatePassword, uploadAvatar, deleteAccount } from '../../services/userService';
 
 // ── Section wrapper for collapsible health cards ──
@@ -68,8 +69,7 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const { toast } = useToast();
 
   // Basic profile
   const [profile, setProfile] = useState({
@@ -96,7 +96,6 @@ const Profile = () => {
   });
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
 
   // Delete
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -201,7 +200,7 @@ const Profile = () => {
       setProfile(prev => ({ ...prev, avatar: data.avatarUrl }));
       updateUser({ ...user, avatar: data.avatarUrl });
     } catch {
-      setError('Failed to upload avatar');
+      toast.error('Failed to upload avatar');
     } finally {
       setLoading(false);
     }
@@ -210,7 +209,6 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     try {
       setLoading(true);
-      setError('');
 
       const payload = {
         name: profile.name,
@@ -235,10 +233,9 @@ const Profile = () => {
       const data = await updateProfile(payload);
       updateUser(data.user);
       setEditing(false);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      toast.success('Profile saved successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to update profile');
+      toast.error(err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -246,13 +243,12 @@ const Profile = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setPasswordError('');
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     if (passwordForm.newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      toast.error('Password must be at least 6 characters');
       return;
     }
     try {
@@ -263,10 +259,9 @@ const Profile = () => {
       });
       setShowPasswordModal(false);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      toast.success('Password updated successfully!');
     } catch (err) {
-      setPasswordError(err.message || 'Failed to update password');
+      toast.error(err.message || 'Failed to update password');
     } finally {
       setPasswordLoading(false);
     }
@@ -279,7 +274,7 @@ const Profile = () => {
       await deleteAccount();
       window.location.href = '/login';
     } catch {
-      setError('Failed to delete account');
+      toast.error('Failed to delete account');
     } finally {
       setDeleteLoading(false);
     }
@@ -310,18 +305,7 @@ const Profile = () => {
   return (
     <DashboardLayout title="Profile">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Success Toast */}
-        {saveSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg z-50"
-          >
-            <Check size={20} />
-            <span>Saved successfully!</span>
-          </motion.div>
-        )}
+
 
         {/* ── Profile Header ── */}
         <Card variant="gradient">
@@ -377,12 +361,7 @@ const Profile = () => {
             <h2 className="text-lg font-semibold text-white">Personal Information</h2>
           </div>
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
-              <AlertCircle className="text-red-400" size={20} />
-              <p className="text-red-400">{error}</p>
-            </div>
-          )}
+
 
           <div className="grid gap-6 sm:grid-cols-2">
             <Input label="Full Name" name="name" value={profile.name} onChange={handleInputChange}
@@ -748,17 +727,11 @@ const Profile = () => {
         onClose={() => {
           setShowPasswordModal(false);
           setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-          setPasswordError('');
         }}
         title="Change Password" size="md">
         <form onSubmit={handlePasswordChange}>
           <Modal.Content>
-            {passwordError && (
-              <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
-                <AlertCircle className="text-red-400" size={20} />
-                <p className="text-red-400">{passwordError}</p>
-              </div>
-            )}
+
             <div className="space-y-4">
               <Input label="Current Password"
                 type={showPasswords.current ? 'text' : 'password'}

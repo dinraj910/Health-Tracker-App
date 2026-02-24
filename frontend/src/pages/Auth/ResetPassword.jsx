@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
+import { useToast } from "../../context/ToastContext";
 import { resetPasswordService } from "../../services/authService";
 
 export default function ResetPassword() {
@@ -13,9 +14,8 @@ export default function ResetPassword() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
 
     const otpRefs = useRef([]);
 
@@ -52,22 +52,20 @@ export default function ResetPassword() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
-        setSuccess("");
 
         const otpString = otp.join("");
         if (otpString.length !== 6) {
-            setError("Please enter the complete 6-digit code");
+            toast.error("Please enter the complete 6-digit code");
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            setError("Passwords do not match");
+            toast.error("Passwords do not match");
             return;
         }
 
         if (newPassword.length < 8) {
-            setError("Password must be at least 8 characters");
+            toast.error("Password must be at least 8 characters");
             return;
         }
 
@@ -78,12 +76,12 @@ export default function ResetPassword() {
                 otp: otpString,
                 newPassword,
             });
-            setSuccess(data.message);
+            toast.success(data.message);
             setTimeout(() => {
                 navigate("/login");
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.message || "Reset failed. Please try again.");
+            toast.error(err.response?.data?.message || "Reset failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -106,19 +104,7 @@ export default function ResetPassword() {
                     </p>
                 </div>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
-                        {error}
-                    </div>
-                )}
 
-                {/* Success Message */}
-                {success && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 px-4 py-3 rounded-xl text-sm">
-                        {success}
-                    </div>
-                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">

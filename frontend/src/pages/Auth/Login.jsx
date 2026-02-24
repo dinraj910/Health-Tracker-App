@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../context/ToastContext";
 import { loginUser, googleAuth } from "../../services/authService";
 
 export default function Login() {
@@ -10,22 +11,21 @@ export default function Login() {
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const googleBtnRef = useRef(null);
 
   // Google Sign-In callback
   const handleGoogleResponse = useCallback(async (response) => {
-    setError("");
     setLoading(true);
     try {
       const data = await googleAuth(response.credential);
       login(data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Google sign-in failed. Please try again.");
+      toast.error(err.response?.data?.message || "Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,14 +70,13 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const data = await loginUser(formData);
       login(data);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      toast.error(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,12 +99,7 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
-            {error}
-          </div>
-        )}
+
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
