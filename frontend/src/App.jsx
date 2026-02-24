@@ -14,7 +14,7 @@ import Records from "./pages/Records/Records";
 import Profile from "./pages/Profile/Profile";
 import Analytics from "./pages/Analytics/Analytics";
 import AuthProvider from "./context/AuthContext";
-import { ToastProvider } from "./context/ToastContext";
+import { ToastProvider } from "./context/ToastProvider";
 import { ToastContainer } from "./components/ui";
 import { useAuth } from "./hooks/useAuth";
 

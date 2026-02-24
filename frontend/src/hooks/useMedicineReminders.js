@@ -148,11 +148,15 @@ export const useMedicineReminders = () => {
 
     // Fetch on mount and refresh every 30 minutes
     useEffect(() => {
-        fetchAndSchedule();
+        // Use setTimeout to avoid synchronous setState calls in effect body
+        const initialFetch = setTimeout(() => {
+            fetchAndSchedule();
+        }, 0);
 
         refreshRef.current = setInterval(fetchAndSchedule, 30 * 60 * 1000);
 
         return () => {
+            clearTimeout(initialFetch);
             clearAllTimeouts();
             if (refreshRef.current) clearInterval(refreshRef.current);
         };

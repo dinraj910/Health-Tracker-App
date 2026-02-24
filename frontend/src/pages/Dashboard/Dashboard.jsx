@@ -20,7 +20,6 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Badge, Button, Loader } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
-import { getDashboardSummary } from '../../services/analyticsService';
 import { saveHealthLog, getTodayLog } from '../../services/healthLogService';
 import { getTodayMedicines } from '../../services/medicineService';
 import { logMedicine } from '../../services/logService';
@@ -571,7 +570,6 @@ function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [dashData, setDashData] = useState(null);
   const [todayHealth, setTodayHealth] = useState(null);
   const [showVitalsModal, setShowVitalsModal] = useState(false);
   const [todayMedicines, setTodayMedicines] = useState([]);
@@ -580,12 +578,10 @@ function Dashboard() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [dashRes, healthRes, medsRes] = await Promise.all([
-        getDashboardSummary(),
+      const [healthRes, medsRes] = await Promise.all([
         getTodayLog(),
         getTodayMedicines(),
       ]);
-      setDashData(dashRes.data);
       setTodayHealth(healthRes.data?.log || null);
       setTodayMedicines(medsRes.data?.medicines || medsRes.medicines || []);
     } catch (err) {

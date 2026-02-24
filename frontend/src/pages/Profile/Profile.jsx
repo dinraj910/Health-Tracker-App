@@ -32,7 +32,7 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Button, Input, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { updateProfile, updatePassword, uploadAvatar, deleteAccount } from '../../services/userService';
 
 // ── Section wrapper for collapsible health cards ──

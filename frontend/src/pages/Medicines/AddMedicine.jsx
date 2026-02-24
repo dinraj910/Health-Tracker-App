@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Input, Badge } from '../../components/ui';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { createMedicine } from '../../services/medicineService';
 
 const AddMedicine = () => {

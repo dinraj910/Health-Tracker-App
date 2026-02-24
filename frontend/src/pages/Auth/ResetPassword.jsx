@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
-import { useToast } from "../../context/ToastContext";
+import { useToast } from "../../hooks/useToast";
 import { resetPasswordService } from "../../services/authService";
 
 export default function ResetPassword() {
