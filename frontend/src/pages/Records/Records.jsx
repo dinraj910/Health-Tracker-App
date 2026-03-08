@@ -53,8 +53,8 @@ const Records = () => {
   const fetchRecords = async () => {
     try {
       setLoading(true);
-      const data = await getRecords();
-      setRecords(data.records || []);
+      const res = await getRecords();
+      setRecords(res.data?.records || res.records || []);
     } catch (error) {
       console.error('Error fetching records:', error);
     } finally {
@@ -81,8 +81,11 @@ const Records = () => {
       formData.append('description', uploadForm.description);
       formData.append('type', uploadForm.type);
 
-      const data = await uploadRecord(formData);
-      setRecords([data.record, ...records]);
+      const res = await uploadRecord(formData);
+      const newRecord = res.data?.record || res.record;
+      if (newRecord) {
+        setRecords([newRecord, ...records]);
+      }
       setShowUploadModal(false);
       setUploadForm({ file: null, title: '', description: '', type: 'prescription' });
     } catch (error) {
@@ -132,6 +135,7 @@ const Records = () => {
   };
 
   const filteredRecords = records.filter(record => {
+    if (!record) return false;
     const matchesSearch = 
       record.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
