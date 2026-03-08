@@ -13,6 +13,8 @@ import History from "./pages/History/History";
 import Records from "./pages/Records/Records";
 import Profile from "./pages/Profile/Profile";
 import Analytics from "./pages/Analytics/Analytics";
+import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 import AuthProvider from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastProvider";
 import { ToastContainer } from "./components/ui";
@@ -77,21 +79,23 @@ function AppRoutes() {
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
 
-      {/* Catch all - redirect to dashboard or home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* 404 - Page Not Found */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <ToastContainer />
-        </BrowserRouter>
-      </ToastProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppRoutes />
+            <ToastContainer />
+          </BrowserRouter>
+        </ToastProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

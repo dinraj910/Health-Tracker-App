@@ -12,6 +12,8 @@ import {
   Pill,
   BarChart3,
   ThermometerSun,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Badge, Loader } from '../../components/ui';
@@ -22,6 +24,7 @@ import {
   getVitalsTrends,
   getWellnessTrends,
 } from '../../services/analyticsService';
+import { downloadHealthReport } from '../../services/reportService';
 
 // ── Mini Sparkline (SVG) ──
 const Sparkline = ({ data, color = '#14b8a6', height = 40, width = 120 }) => {
@@ -132,11 +135,23 @@ const MOOD_SCORE = { terrible: 1, bad: 2, okay: 3, good: 4, great: 5 };
 function Analytics() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState(7);
+  const [reportLoading, setReportLoading] = useState(false);
   const [weeklyData, setWeeklyData] = useState(null);
   const [adherence, setAdherence] = useState(null);
   const [medStats, setMedStats] = useState([]);
   const [vitals, setVitals] = useState(null);
   const [wellness, setWellness] = useState(null);
+
+  const handleDownloadReport = async () => {
+    try {
+      setReportLoading(true);
+      await downloadHealthReport(period);
+    } catch (error) {
+      console.error('Error downloading report:', error);
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const fetchAll = useCallback(async () => {
     try {
@@ -207,16 +222,36 @@ function Analytics() {
             </h1>
             <p className="text-sm text-slate-400 mt-1">Track trends and spot patterns in your health data</p>
           </div>
-          <div className="flex gap-2 bg-slate-800/50 rounded-xl p-1 border border-slate-700">
-            {[7, 14, 30].map(d => (
-              <button key={d}
-                onClick={() => setPeriod(d)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all
-                  ${period === d ? 'bg-teal-500/20 text-teal-300' : 'text-slate-400 hover:text-slate-300'}`}
-              >
-                {d}D
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownloadReport}
+              disabled={reportLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {reportLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileDown size={16} />
+                  <span className="hidden sm:inline">AI Health Report</span>
+                  <span className="sm:hidden">Report</span>
+                </>
+              )}
+            </button>
+            <div className="flex gap-2 bg-slate-800/50 rounded-xl p-1 border border-slate-700">
+              {[7, 14, 30].map(d => (
+                <button key={d}
+                  onClick={() => setPeriod(d)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all
+                    ${period === d ? 'bg-teal-500/20 text-teal-300' : 'text-slate-400 hover:text-slate-300'}`}
+                >
+                  {d}D
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
