@@ -40,6 +40,10 @@ const medicalRecordSchema = new mongoose.Schema(
       type: String,
       required: [true, "File URL is required"],
     },
+    cloudinaryPublicId: {
+      type: String,
+      // Cloudinary public ID for deletion
+    },
     fileName: {
       type: String,
       required: [true, "File name is required"],

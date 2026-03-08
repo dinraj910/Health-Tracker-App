@@ -1,10 +1,12 @@
 import MedicalRecord from "../models/MedicalRecord.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
-import { deleteFile } from "../middleware/uploadMiddleware.js";
-import path from "path";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../middleware/uploadMiddleware.js";
 
 /**
- * @desc    Upload medical record
+ * @desc    Upload medical record to Cloudinary
  * @route   POST /api/records/upload
  * @access  Private
  */
@@ -27,12 +29,21 @@ export const uploadRecord = asyncHandler(async (req, res) => {
     isImportant,
   } = req.body;
 
+  // Upload file buffer to Cloudinary
+  const isPdf = req.file.mimetype === "application/pdf";
+  const cloudinaryResult = await uploadToCloudinary(
+    req.file.buffer,
+    "meditrack/records",
+    isPdf ? "raw" : "image"
+  );
+
   const record = await MedicalRecord.create({
     userId: req.user._id,
-    title,
+    title: title || description || "Untitled Record",
     type,
     description,
-    fileUrl: `/uploads/records/${req.file.filename}`,
+    fileUrl: cloudinaryResult.secure_url,
+    cloudinaryPublicId: cloudinaryResult.public_id,
     fileName: req.file.originalname,
     fileType: req.file.mimetype,
     fileSize: req.file.size,
@@ -170,7 +181,7 @@ export const updateRecord = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Delete record
+ * @desc    Delete record (also removes file from Cloudinary)
  * @route   DELETE /api/records/:id
  * @access  Private
  */
@@ -187,9 +198,14 @@ export const deleteRecord = asyncHandler(async (req, res) => {
     });
   }
 
-  // Delete the file from storage
-  const filePath = path.join(process.cwd(), record.fileUrl);
-  deleteFile(filePath);
+  // Delete the file from Cloudinary
+  if (record.cloudinaryPublicId) {
+    const isPdf = record.fileType === "application/pdf";
+    await deleteFromCloudinary(
+      record.cloudinaryPublicId,
+      isPdf ? "raw" : "image"
+    );
+  }
 
   await record.deleteOne();
 

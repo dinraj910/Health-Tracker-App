@@ -1,7 +1,9 @@
 import User from "../models/User.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
-import { deleteFile } from "../middleware/uploadMiddleware.js";
-import path from "path";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../middleware/uploadMiddleware.js";
 
 /**
  * @desc    Get user profile
@@ -64,7 +66,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Update avatar
+ * @desc    Update avatar (upload to Cloudinary)
  * @route   PUT /api/user/avatar
  * @access  Private
  */
@@ -78,25 +80,26 @@ export const updateAvatar = asyncHandler(async (req, res) => {
 
   const user = await User.findById(req.user._id);
 
-  // Delete old avatar if exists
-  if (user.avatar) {
-    const oldAvatarPath = path.join(
-      process.cwd(),
-      "uploads/avatars",
-      path.basename(user.avatar)
-    );
-    deleteFile(oldAvatarPath);
+  // Delete old avatar from Cloudinary if exists
+  if (user.avatarPublicId) {
+    await deleteFromCloudinary(user.avatarPublicId, "image");
   }
 
-  // Update with new avatar
-  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-  user.avatar = avatarUrl;
+  // Upload new avatar to Cloudinary
+  const cloudinaryResult = await uploadToCloudinary(
+    req.file.buffer,
+    "meditrack/avatars",
+    "image"
+  );
+
+  user.avatar = cloudinaryResult.secure_url;
+  user.avatarPublicId = cloudinaryResult.public_id;
   await user.save();
 
   res.status(200).json({
     success: true,
     message: "Avatar updated successfully",
-    data: { avatar: avatarUrl },
+    data: { avatar: cloudinaryResult.secure_url },
   });
 });
 

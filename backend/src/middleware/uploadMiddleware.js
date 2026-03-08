@@ -1,49 +1,9 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import cloudinary from "../config/cloudinary.js";
 
-// Get directory name in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ─── Multer: memory storage (files buffered in RAM, then uploaded to Cloudinary) ───
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "../../uploads");
-const recordsDir = path.join(uploadsDir, "records");
-const avatarsDir = path.join(uploadsDir, "avatars");
-
-[uploadsDir, recordsDir, avatarsDir].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
-
-/**
- * Storage configuration for medical records
- */
-const recordStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, recordsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `record-${req.user._id}-${uniqueSuffix}${ext}`);
-  },
-});
-
-/**
- * Storage configuration for avatars
- */
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, avatarsDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `avatar-${req.user._id}-${Date.now()}${ext}`);
-  },
-});
+const memoryStorage = multer.memoryStorage();
 
 /**
  * File filter for medical records (PDFs and images)
@@ -85,7 +45,7 @@ const avatarFileFilter = (req, file, cb) => {
  * Max file size: 10MB
  */
 export const uploadRecord = multer({
-  storage: recordStorage,
+  storage: memoryStorage,
   fileFilter: recordFileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -97,34 +57,62 @@ export const uploadRecord = multer({
  * Max file size: 5MB
  */
 export const uploadAvatar = multer({
-  storage: avatarStorage,
+  storage: memoryStorage,
   fileFilter: avatarFileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
 });
 
+// ─── Cloudinary helpers ───
+
 /**
- * Delete file utility
+ * Upload a file buffer to Cloudinary
+ * @param {Buffer} fileBuffer - The file buffer from multer
+ * @param {string} folder - Cloudinary folder (e.g., "meditrack/records")
+ * @param {string} resourceType - "image" or "auto" (for PDFs)
+ * @returns {Promise<{secure_url: string, public_id: string}>}
  */
-export const deleteFile = (filePath) => {
+export const uploadToCloudinary = (fileBuffer, folder, resourceType = "auto") => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: resourceType,
+        allowed_formats: ["jpg", "jpeg", "png", "webp", "pdf"],
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve({
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+          });
+        }
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
+
+/**
+ * Delete a file from Cloudinary by public_id
+ * @param {string} publicId - The Cloudinary public ID
+ * @param {string} resourceType - "image" or "raw" (for PDFs)
+ * @returns {Promise<boolean>}
+ */
+export const deleteFromCloudinary = async (publicId, resourceType = "image") => {
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      return true;
-    }
-    return false;
+    if (!publicId) return false;
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: resourceType,
+    });
+    return result.result === "ok";
   } catch (error) {
-    console.error("Error deleting file:", error);
+    console.error("Error deleting from Cloudinary:", error);
     return false;
   }
 };
 
-/**
- * Get file URL from filename
- */
-export const getFileUrl = (filename, type = "records") => {
-  return `/uploads/${type}/${filename}`;
-};
-
-export default { uploadRecord, uploadAvatar, deleteFile, getFileUrl };
+export default { uploadRecord, uploadAvatar, uploadToCloudinary, deleteFromCloudinary };

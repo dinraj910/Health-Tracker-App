@@ -142,6 +142,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    avatarPublicId: {
+      type: String,
+      // Cloudinary public ID for avatar deletion
+    },
     isActive: {
       type: Boolean,
       default: true,

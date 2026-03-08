@@ -34,6 +34,7 @@ const Records = () => {
   const fileInputRef = useRef(null);
   const [uploadForm, setUploadForm] = useState({
     file: null,
+    title: '',
     description: '',
     type: 'prescription'
   });
@@ -76,13 +77,14 @@ const Records = () => {
       setUploadLoading(true);
       const formData = new FormData();
       formData.append('file', uploadForm.file);
+      formData.append('title', uploadForm.title || uploadForm.file.name);
       formData.append('description', uploadForm.description);
       formData.append('type', uploadForm.type);
 
       const data = await uploadRecord(formData);
       setRecords([data.record, ...records]);
       setShowUploadModal(false);
-      setUploadForm({ file: null, description: '', type: 'prescription' });
+      setUploadForm({ file: null, title: '', description: '', type: 'prescription' });
     } catch (error) {
       console.error('Error uploading record:', error);
     } finally {
@@ -116,8 +118,22 @@ const Records = () => {
     setShowPreviewModal(true);
   };
 
+  const isImageFile = (record) => {
+    // Check mimetype first, then URL patterns for Cloudinary
+    if (record.fileType?.startsWith('image/')) return true;
+    if (record.fileUrl?.includes('/image/upload/')) return true;
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(record.fileUrl || '');
+  };
+
+  const isPdfFile = (record) => {
+    if (record.fileType === 'application/pdf') return true;
+    if (record.fileUrl?.includes('/raw/upload/')) return true;
+    return /\.pdf$/i.test(record.fileUrl || '');
+  };
+
   const filteredRecords = records.filter(record => {
     const matchesSearch = 
+      record.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.type?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterType === 'all' || record.type === filterType;
@@ -228,10 +244,10 @@ const Records = () => {
                         className={`h-32 rounded-2xl mb-4 flex items-center justify-center cursor-pointer bg-gradient-to-br from-${color}-500/10 to-${color}-500/5 border border-${color}-500/20`}
                         onClick={() => handlePreview(record)}
                       >
-                        {record.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                        {isImageFile(record) ? (
                           <img 
                             src={record.fileUrl} 
-                            alt={record.description}
+                            alt={record.title || record.description}
                             className="w-full h-full object-cover rounded-2xl"
                           />
                         ) : (
@@ -247,8 +263,11 @@ const Records = () => {
                           </Badge>
                         </div>
                         <h3 className="font-semibold text-white truncate">
-                          {record.description || 'Untitled Record'}
+                          {record.title || 'Untitled Record'}
                         </h3>
+                        {record.description && (
+                          <p className="text-sm text-slate-400 truncate mt-1">{record.description}</p>
+                        )}
                         <div className="flex items-center gap-2 text-sm text-slate-400 mt-1">
                           <Calendar size={14} />
                           <span>{new Date(record.createdAt).toLocaleDateString()}</span>
@@ -314,6 +333,15 @@ const Records = () => {
         <form onSubmit={handleUpload}>
           <Modal.Content>
             <div className="space-y-4">
+              {/* Title */}
+              <Input
+                label="Record Title"
+                placeholder="e.g. Blood Test Report - March 2026"
+                value={uploadForm.title}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
+                required
+              />
+
               {/* File Upload */}
               <div
                 onClick={() => fileInputRef.current?.click()}
@@ -374,7 +402,7 @@ const Records = () => {
 
               {/* Description */}
               <Input
-                label="Description"
+                label="Description (Optional)"
                 placeholder="Brief description of the record..."
                 value={uploadForm.description}
                 onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
@@ -388,7 +416,7 @@ const Records = () => {
             <Button 
               variant="gradient" 
               type="submit"
-              disabled={!uploadForm.file}
+              disabled={!uploadForm.file || !uploadForm.title}
               loading={uploadLoading}
               leftIcon={<Upload size={18} />}
             >
@@ -442,13 +470,13 @@ const Records = () => {
         size="4xl"
       >
         <Modal.Content>
-          {selectedRecord?.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+          {selectedRecord && isImageFile(selectedRecord) ? (
             <img 
               src={selectedRecord.fileUrl}
-              alt={selectedRecord.description}
+              alt={selectedRecord.title || selectedRecord.description}
               className="w-full rounded-2xl"
             />
-          ) : selectedRecord?.fileUrl?.match(/\.pdf$/i) ? (
+          ) : selectedRecord && isPdfFile(selectedRecord) ? (
             <iframe
               src={selectedRecord.fileUrl}
               className="w-full h-96 rounded-2xl"
