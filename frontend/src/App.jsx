@@ -13,6 +13,7 @@ import History from "./pages/History/History";
 import Records from "./pages/Records/Records";
 import Profile from "./pages/Profile/Profile";
 import Analytics from "./pages/Analytics/Analytics";
+import DrugDatabase from "./pages/DrugDatabase/DrugDatabase";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AuthProvider from "./context/AuthContext";
@@ -78,6 +79,7 @@ function AppRoutes() {
       <Route path="/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+      <Route path="/drug-database" element={<ProtectedRoute><DrugDatabase /></ProtectedRoute>} />
 
       {/* 404 - Page Not Found */}
       <Route path="*" element={<NotFound />} />
