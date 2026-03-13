@@ -1,3 +1,6 @@
+import axios from 'axios';
+import https from 'https';
+
 /**
  * OpenFDA Drug Label API Service
  *
@@ -7,6 +10,9 @@
  */
 
 const BASE_URL = "https://api.fda.gov/drug/label.json";
+
+// Force IPv4 to prevent Node.js ETIMEDOUT errors on systems with broken IPv6
+const httpsAgent = new https.Agent({ family: 4 });
 
 /**
  * Search drugs by name (brand or generic)
@@ -24,20 +30,11 @@ export async function searchDrugs(query, limit = 20, skip = 0) {
 
   // Search in brand_name and generic_name fields
   const searchQuery = `(openfda.brand_name:"${searchTerm}"+openfda.generic_name:"${searchTerm}")`;
-
-  const url = `${BASE_URL}?search=${searchQuery}&limit=${limit}&skip=${skip}`;
+  const url = `${BASE_URL}?search=${encodeURIComponent(searchQuery)}&limit=${limit}&skip=${skip}`;
 
   try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return { results: [], total: 0 };
-      }
-      throw new Error(`OpenFDA API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const response = await axios.get(url, { httpsAgent });
+    const data = response.data;
 
     const results = (data.results || []).map((drug) => parseDrugLabel(drug));
 
@@ -46,26 +43,24 @@ export async function searchDrugs(query, limit = 20, skip = 0) {
       total: data.meta?.results?.total || results.length,
     };
   } catch (error) {
-    // If the structured search fails, try a simpler search
-    try {
-      const simpleUrl = `${BASE_URL}?search=${searchTerm}&limit=${limit}&skip=${skip}`;
-      const response = await fetch(simpleUrl);
+    // If the structured search fails (e.g. 404 because of complex query), try simple search
+    if (error.response?.status === 404) {
+      try {
+        const simpleUrl = `${BASE_URL}?search=${searchTerm}&limit=${limit}&skip=${skip}`;
+        const response2 = await axios.get(simpleUrl, { httpsAgent });
+        const data2 = response2.data;
+        const results = (data2.results || []).map((drug) => parseDrugLabel(drug));
 
-      if (!response.ok) {
-        if (response.status === 404) return { results: [], total: 0 };
-        throw error;
+        return {
+          results,
+          total: data2.meta?.results?.total || results.length,
+        };
+      } catch (err2) {
+        if (err2.response?.status === 404) return { results: [], total: 0 };
+        throw err2;
       }
-
-      const data = await response.json();
-      const results = (data.results || []).map((drug) => parseDrugLabel(drug));
-
-      return {
-        results,
-        total: data.meta?.results?.total || results.length,
-      };
-    } catch {
-      throw error;
     }
+    throw error;
   }
 }
 
@@ -85,16 +80,15 @@ export async function getDrugById(id) {
   for (const search of searches) {
     try {
       const url = `${BASE_URL}?search=${encodeURIComponent(search)}&limit=1`;
-      const response = await fetch(url);
+      const response = await axios.get(url, { httpsAgent });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.results && data.results.length > 0) {
-          return parseDrugLabel(data.results[0], true);
-        }
+      if (response.data?.results && response.data.results.length > 0) {
+        return parseDrugLabel(response.data.results[0], true);
       }
-    } catch {
-      continue;
+    } catch (error) {
+      // Ignore 404s and try the next ID match
+      if (error.response?.status === 404) continue;
+      console.error("OpenFDA ID search error:", error.message);
     }
   }
 
@@ -109,16 +103,12 @@ export async function getDrugById(id) {
  */
 export async function getDrugsByCategory(purpose, limit = 20) {
   const searchTerm = encodeURIComponent(purpose.trim());
-  const url = `${BASE_URL}?search=purpose:"${searchTerm}"&limit=${limit}`;
+  const url = `${BASE_URL}?search=${encodeURIComponent(`purpose:"${searchTerm}"`)}&limit=${limit}`;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 404) return { results: [], total: 0 };
-      throw new Error(`OpenFDA API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const response = await axios.get(url, { httpsAgent });
+    const data = response.data;
+    
     const results = (data.results || []).map((drug) => parseDrugLabel(drug));
 
     return {
@@ -126,7 +116,8 @@ export async function getDrugsByCategory(purpose, limit = 20) {
       total: data.meta?.results?.total || results.length,
     };
   } catch (error) {
-    console.error("OpenFDA category search error:", error);
+    if (error.response?.status === 404) return { results: [], total: 0 };
+    console.error("OpenFDA category search error:", error.message);
     return { results: [], total: 0 };
   }
 }
