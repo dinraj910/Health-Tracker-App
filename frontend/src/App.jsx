@@ -14,6 +14,7 @@ import Records from "./pages/Records/Records";
 import Profile from "./pages/Profile/Profile";
 import Analytics from "./pages/Analytics/Analytics";
 import DrugDatabase from "./pages/DrugDatabase/DrugDatabase";
+import PrescriptionScanner from "./pages/Scanner/PrescriptionScanner";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AuthProvider from "./context/AuthContext";
@@ -80,6 +81,7 @@ function AppRoutes() {
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/drug-database" element={<ProtectedRoute><DrugDatabase /></ProtectedRoute>} />
+      <Route path="/scanner" element={<ProtectedRoute><PrescriptionScanner /></ProtectedRoute>} />
 
       {/* 404 - Page Not Found */}
       <Route path="*" element={<NotFound />} />

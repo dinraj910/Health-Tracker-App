@@ -13,7 +13,8 @@ import {
   X,
   ChevronLeft,
   Activity,
-  BookOpen
+  BookOpen,
+  ScanLine
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'History', href: '/history', icon: History },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Drug Database', href: '/drug-database', icon: BookOpen },
+  { name: 'Scan Rx', href: '/scanner', icon: ScanLine },
   { name: 'Profile', href: '/profile', icon: User }
 ];
 
