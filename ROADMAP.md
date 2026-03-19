@@ -219,7 +219,7 @@ MediTrack is a comprehensive health management platform that enables users to:
 | 7.6 | Medication adherence prediction (predict skip risk) | 🔲 To Do | 🟡 Medium |
 | 7.7 | Health trend anomaly detection (alert unusual vitals) | 🔲 To Do | 🔴 High |
 | 7.8 | Smart medicine timing suggestions based on routine | 🔲 To Do | 🟢 Low |
-| 7.9 | Prescription OCR — Extract medicine info from uploaded prescription photo | 🔲 To Do | 🔴 High |
+| 7.9 | Prescription OCR — Extract medicine info from uploaded prescription photo | ✅ Done | 🔴 High |
 | 7.10 | Medical report summary — Upload a lab report, get key findings | 🔲 To Do | 🟡 Medium |
 | **Automation** | | | |
 | 7.11 | Auto-refill reminders (alert when medicine course is ending) | 🔲 To Do | 🔴 High |
@@ -299,7 +299,7 @@ Phase 3: Core Features       █████████████████
 Phase 4: Dashboard           ██████████████████░░  90%  (13/14)
 Phase 5: UI/UX Polish        ████████████████░░░░  80%  (15/19)
 Phase 6: Medicine API        ░░░░░░░░░░░░░░░░░░░░   0%  (0/9)
-Phase 7: AI & Automation     ░░░░░░░░░░░░░░░░░░░░   0%  (0/14)
+Phase 7: AI & Automation     █░░░░░░░░░░░░░░░░░░░   7%  (1/14)
 Phase 8: Notifications       █████░░░░░░░░░░░░░░░  25%  (2/8)
 Phase 9: Social & Export     ░░░░░░░░░░░░░░░░░░░░   0%  (0/7)
 Phase 10: Deployment         ██░░░░░░░░░░░░░░░░░░   7%  (1/15)
