@@ -7,8 +7,8 @@ export const getAnalytics = async (period = 'week') => {
 };
 
 // Get weekly stats for chart
-export const getWeeklyStats = async () => {
-  const response = await api.get('/analytics/weekly');
+export const getWeeklyStats = async (days = 7) => {
+  const response = await api.get('/analytics/weekly', { params: { days } });
   return response.data;
 };
 

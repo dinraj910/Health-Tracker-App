@@ -181,7 +181,7 @@ Disclaimer: This report is auto-generated and does not constitute medical advice
  * Build a health data prompt for AI analysis
  */
 export function buildHealthPrompt(userData) {
-  const { user, vitals, adherence, medicines, wellness } = userData;
+  const { user, vitals, adherence, medicines, wellness, medicalRecords } = userData;
 
   let prompt = `Analyze the following patient health data and provide a professional health summary with key insights, trends, and recommendations. Keep it concise (8-12 bullet points max). Format with clear sections.
 
@@ -253,6 +253,19 @@ RECENT VITALS (last ${bp?.length || 0} readings):`;
       if (water?.length > 0)
         prompt += `\n- Average Water: ${(water.reduce((a, b) => a + b.value, 0) / water.length).toFixed(1)} glasses`;
     }
+  }
+
+  if (medicalRecords && medicalRecords.length > 0) {
+    prompt += `\n\nMEDICAL RECORDS (${medicalRecords.length} records in this period):\n`;
+    medicalRecords.forEach(r => {
+      const date = new Date(r.recordDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+      const type = r.type?.replace(/-/g, " ").toUpperCase();
+      prompt += `- [${date}] ${type}: "${r.title}"`;
+      if (r.doctorName) prompt += ` — Dr. ${r.doctorName}`;
+      if (r.hospitalName) prompt += `, ${r.hospitalName}`;
+      if (r.description) prompt += `\n  Notes: ${r.description}`;
+      prompt += "\n";
+    });
   }
 
   prompt += `

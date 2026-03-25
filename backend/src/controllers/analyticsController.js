@@ -9,24 +9,27 @@ import { asyncHandler } from "../middleware/errorMiddleware.js";
  * @access  Private
  */
 export const getWeeklyAnalytics = asyncHandler(async (req, res) => {
+  const { days = 7 } = req.query;
   const today = new Date();
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - 6);
+  startOfWeek.setDate(today.getDate() - (parseInt(days) - 1));
+
   startOfWeek.setHours(0, 0, 0, 0);
 
   const logs = await MedicineLog.find({
     userId: req.user._id,
     date: { $gte: startOfWeek },
     status: { $in: ["taken", "missed", "skipped"] },
-  });
+  }).populate("medicineId", "medicineName");
 
   // Group by date
   const dailyStats = {};
-  for (let i = 0; i < 7; i++) {
+  const numDays = parseInt(days);
+  for (let i = 0; i < numDays; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     const dateStr = date.toISOString().split("T")[0];
-    dailyStats[dateStr] = { taken: 0, missed: 0, skipped: 0, total: 0 };
+    dailyStats[dateStr] = { taken: 0, missed: 0, skipped: 0, total: 0, medicinesTaken: [] };
   }
 
   logs.forEach((log) => {
@@ -34,6 +37,10 @@ export const getWeeklyAnalytics = asyncHandler(async (req, res) => {
     if (dailyStats[dateStr]) {
       dailyStats[dateStr][log.status]++;
       dailyStats[dateStr].total++;
+      if (log.status === "taken" && log.medicineId && log.medicineId.medicineName) {
+        // Assume medicineName is populated, if not we'll need to populate it on the query
+        dailyStats[dateStr].medicinesTaken.push(log.medicineId.medicineName);
+      }
     }
   });
 
