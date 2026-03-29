@@ -1,44 +1,36 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api/auth";
-
-// Create axios instance with credentials
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true, // Include cookies in requests
-});
+import api from "./api";
 
 export const registerUser = async (data) => {
-  const res = await api.post("/register", data);
+  const res = await api.post("/auth/register", data);
   return res.data.data; // { user, token }
 };
 
 export const loginUser = async (data) => {
-  const res = await api.post("/login", data);
+  const res = await api.post("/auth/login", data);
   return res.data.data; // { user, token }
 };
 
 export const logoutUser = async () => {
-  const res = await api.post("/logout");
+  const res = await api.post("/auth/logout");
   return res.data;
 };
 
 export const getCurrentUser = async () => {
-  const res = await api.get("/me");
+  const res = await api.get("/auth/me");
   return res.data.data; // { user }
 };
 
 export const googleAuth = async (credential) => {
-  const res = await api.post("/google", { credential });
+  const res = await api.post("/auth/google", { credential });
   return res.data.data; // { user, token }
 };
 
 export const forgotPassword = async (email) => {
-  const res = await api.post("/forgot-password", { email });
+  const res = await api.post("/auth/forgot-password", { email });
   return res.data;
 };
 
 export const resetPasswordService = async ({ email, otp, newPassword }) => {
-  const res = await api.post("/reset-password", { email, otp, newPassword });
+  const res = await api.post("/auth/reset-password", { email, otp, newPassword });
   return res.data;
 };

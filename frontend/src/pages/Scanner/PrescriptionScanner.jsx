@@ -17,11 +17,9 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import usePageTitle from "../../hooks/usePageTitle";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import api from "../../services/api";
 
 // ——————————————————————————————————————————
 // Sub-components
@@ -240,11 +238,10 @@ export default function PrescriptionScanner() {
       const formData = new FormData();
       formData.append("prescription", file);
 
-      const { data } = await axios.post(
-        `${API_BASE}/api/prescription/scan`,
+      const { data } = await api.post(
+        "/prescription/scan",
         formData,
         {
-          withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
