@@ -2,10 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- PWA & Mobile -->
+    <meta name="theme-color" content="#14b8a6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MediTrack" />
+    <meta name="msapplication-TileColor" content="#14b8a6" />
+
+    <!-- SEO -->
+    <meta name="description" content="MediTrack — Your personal health & medicine tracking companion. Never miss a dose again." />
+    <meta name="keywords" content="medicine tracker, health tracker, medication reminder, dose tracker" />
+    <meta name="author" content="MediTrack" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MediTrack — Health & Medicine Tracker" />
+    <meta property="og:description" content="Your personal health & medicine tracking companion. Never miss a dose again." />
+    <meta property="og:image" content="/icons/icon.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="MediTrack" />
+    <meta name="twitter:description" content="Track your medicines, vitals & health journey." />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="/icons/icon.png" />
+    <link rel="apple-touch-icon" href="/icons/icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async></script>
-    <title>MediTrack</title>
+
+    <title>MediTrack — Health & Medicine Tracker</title>
   </head>
   <body>
     <div id="root"></div>

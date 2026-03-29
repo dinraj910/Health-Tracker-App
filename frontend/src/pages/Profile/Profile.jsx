@@ -34,6 +34,7 @@ import { Card, Button, Input, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { updateProfile, updatePassword, uploadAvatar, deleteAccount } from '../../services/userService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 // ── Section wrapper for collapsible health cards ──
 const ProfileSection = ({ icon, iconColor, iconBg, title, children, defaultOpen = false }) => {
@@ -62,6 +63,7 @@ const ProfileSection = ({ icon, iconColor, iconBg, title, children, defaultOpen 
 };
 
 const Profile = () => {
+  usePageTitle('My Profile');
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef(null);
 

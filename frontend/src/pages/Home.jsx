@@ -20,8 +20,10 @@ import {
   ChevronDown
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import usePageTitle from "../hooks/usePageTitle";
 
 export default function Home() {
+  usePageTitle('Home');
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);

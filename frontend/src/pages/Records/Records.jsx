@@ -18,8 +18,10 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Badge, Input, Modal, Loader } from '../../components/ui';
 import { getRecords, deleteRecord, uploadRecord } from '../../services/recordService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Records = () => {
+  usePageTitle('Medical Records');
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

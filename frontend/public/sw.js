@@ -35,7 +35,7 @@ self.addEventListener("notificationclick", (event) => {
 
   // Focus existing tab or open a new one
   event.waitUntil(
-    clients
+    self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
@@ -44,8 +44,8 @@ self.addEventListener("notificationclick", (event) => {
             return client.focus();
           }
         }
-        if (clients.openWindow) {
-          return clients.openWindow(url);
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(url);
         }
       })
   );

@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitse.dev/config/
 export default defineConfig({
+  plugins: [react()],
   server: {
-    allowedHosts: ['8d3f-202-88-229-91.ngrok-free.app'],
     port: 5173,
     host: true,
     strictPort: true,
@@ -12,5 +11,16 @@ export default defineConfig({
       overlay: false,
     },
   },
-  plugins: [react()],
+  build: {
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['framer-motion', 'lucide-react'],
+          'vendor-http': ['axios'],
+        },
+      },
+    },
+  },
 })

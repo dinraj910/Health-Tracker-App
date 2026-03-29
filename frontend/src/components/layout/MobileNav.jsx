@@ -26,7 +26,7 @@ const MobileNav = ({ className }) => {
       'fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 md:hidden',
       className
     )}>
-      <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
+      <div className="flex items-center justify-around px-2 pt-2">
         {bottomNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
@@ -117,7 +117,7 @@ const MobileNav = ({ className }) => {
       </div>
 
       {/* Safe area spacing for phones with home indicators */}
-      <div className="h-safe-area-inset-bottom bg-slate-900/95" />
+      <div className="mobile-nav-safe bg-slate-900/95" />
     </nav>
   );
 };

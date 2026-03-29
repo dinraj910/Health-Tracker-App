@@ -94,7 +94,7 @@ const DashboardLayout = ({ children, title, fullWidth = false }) => {
 
           {/* Content Container */}
           <div className={fullWidth ? 'w-full' : 'max-w-7xl mx-auto'}>
-            <div className="px-4 md:px-6 py-4 md:py-6 pb-20 md:pb-6">
+          <div className="px-4 md:px-6 py-4 md:py-6 pb-nav-safe md:pb-6">
               {children}
             </div>
           </div>

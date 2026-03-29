@@ -4,8 +4,10 @@ import AuthLayout from "../../layouts/AuthLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";
 import { loginUser, googleAuth } from "../../services/authService";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function Login() {
+  usePageTitle('Sign In');
   const [formData, setFormData] = useState({
     email: "",
     password: ""

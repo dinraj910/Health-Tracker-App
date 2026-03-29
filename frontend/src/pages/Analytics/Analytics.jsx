@@ -12,6 +12,7 @@ import {
   getVitalsTrends, getWellnessTrends,
 } from '../../services/analyticsService';
 import { downloadHealthReport } from '../../services/reportService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 // ── Sparkline ─────────────────────────────────────────────────────────────────
 const Sparkline = ({ data, color = '#14b8a6', height = 36, width = 90 }) => {
@@ -175,6 +176,7 @@ const DayByDayTable = ({ vitals, wellness, weeklyData }) => {
 
 // ── Main Analytics Component ──────────────────────────────────────────────────
 function Analytics() {
+  usePageTitle('Analytics');
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState(7);
   const [reportLoading, setReportLoading] = useState(false);

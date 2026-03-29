@@ -1,34 +1,77 @@
 @import "tailwindcss";
 
-/* Custom Scrollbar for Dark Mode */
+/* =========================================
+   SCROLLBAR
+   ========================================= */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: #0f172a;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #334155;
-  border-radius: 5px;
+  border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
 }
 
-/* Body Defaults */
+/* =========================================
+   BASE
+   ========================================= */
+html {
+  scroll-behavior: smooth;
+  /* Respect iOS safe areas */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+
 body {
   background: #020617;
   color: #f1f5f9;
+  /* Remove tap highlight flash on mobile */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent text size adjustment on orientation change */
+  -webkit-text-size-adjust: 100%;
+  /* Smoother font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent overscroll bounce jank */
+  overscroll-behavior-y: none;
 }
 
+/* Better touch targets */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* =========================================
+   SAFE AREA UTILITIES
+   ========================================= */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pb-nav-safe {
+  /* Content padding clears bottom nav + iPhone home bar */
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+.mb-nav-safe {
+  margin-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -42,4 +85,35 @@ body {
 
 .animate-fade-up {
   animation: fade-up 0.5s ease-out forwards;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
+
+/* =========================================
+   INPUT MOBILE FIXES
+   ========================================= */
+input[type="date"],
+input[type="time"],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  /* Prevent iOS zoom on focus (requires 16px font-size) */
+  font-size: 16px;
+}
+
+/* =========================================
+   MOBILE NAV SAFE AREA
+   ========================================= */
+.mobile-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }

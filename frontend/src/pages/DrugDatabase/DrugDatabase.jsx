@@ -19,6 +19,7 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Badge, Button, Input } from '../../components/ui';
 import { searchDrugs, getDrugDetails } from '../../services/drugService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const QUICK_CATEGORIES = [
   { label: 'Pain Relief', query: 'pain relief', icon: Heart, color: 'text-red-400' },
@@ -30,6 +31,7 @@ const QUICK_CATEGORIES = [
 ];
 
 function DrugDatabase() {
+  usePageTitle('Medicine Database');
   const [query, setQuery] = useState('');
   const [drugs, setDrugs] = useState([]);
   const [total, setTotal] = useState(0);

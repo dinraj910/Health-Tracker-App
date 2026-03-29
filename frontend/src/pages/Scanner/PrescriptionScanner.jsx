@@ -19,6 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -208,6 +209,7 @@ function MedicineCard({ medicine, index }) {
 // ——————————————————————————————————————————
 
 export default function PrescriptionScanner() {
+  usePageTitle('Prescription Scanner');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);

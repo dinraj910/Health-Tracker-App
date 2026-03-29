@@ -15,8 +15,10 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Badge, Loader, StatCard } from '../../components/ui';
 import { getTodayMedicines } from '../../services/medicineService';
 import { logMedicine } from '../../services/logService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Today = () => {
+  usePageTitle("Today's Medicines");
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());

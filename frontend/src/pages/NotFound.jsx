@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, ArrowLeft, Search } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const NotFound = () => {
+  usePageTitle('Page Not Found');
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

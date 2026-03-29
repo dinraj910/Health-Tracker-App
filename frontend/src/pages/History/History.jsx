@@ -14,8 +14,10 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Card, Badge, Button, Loader, Input } from '../../components/ui';
 import { getLogHistory } from '../../services/logService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const History = () => {
+  usePageTitle('Medicine History');
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());

@@ -16,6 +16,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Input, Badge } from '../../components/ui';
 import { useToast } from '../../hooks/useToast';
 import { createMedicine, getMedicine, updateMedicine } from '../../services/medicineService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const EMPTY_FORM = {
   medicineName: '',
@@ -39,6 +40,7 @@ const AddMedicine = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // present when editing
   const isEditMode = Boolean(id);
+  usePageTitle(isEditMode ? 'Edit Medicine' : 'Add Medicine');
 
   const [loading, setLoading] = useState(false);
   const [fetchingMedicine, setFetchingMedicine] = useState(isEditMode);

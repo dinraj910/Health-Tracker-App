@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useToast } from "../../hooks/useToast";
 import { forgotPassword } from "../../services/authService";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function ForgotPassword() {
+    usePageTitle('Forgot Password');
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();

@@ -7,6 +7,8 @@ import { redis } from '../config/redis.js';
  */
 export const cacheMiddleware = (keyFn, ttlSeconds = 300) => async (req, res, next) => {
   try {
+    if (redis.status !== 'ready') return next();
+
     const key = keyFn(req);
     const cached = await redis.get(key);
     
@@ -39,6 +41,8 @@ export const cacheMiddleware = (keyFn, ttlSeconds = 300) => async (req, res, nex
  */
 export const clearUserCache = async (userId, patterns) => {
   try {
+    if (redis.status !== 'ready') return;
+    
     const keysToDelete = [];
     
     for (const pattern of patterns) {

@@ -4,8 +4,10 @@ import AuthLayout from "../../layouts/AuthLayout";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";
 import { registerUser, googleAuth } from "../../services/authService";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function Register() {
+  usePageTitle('Create Account');
   const [formData, setFormData] = useState({
     name: "",
     email: "",

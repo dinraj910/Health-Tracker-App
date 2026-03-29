@@ -3,8 +3,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useToast } from "../../hooks/useToast";
 import { resetPasswordService } from "../../services/authService";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function ResetPassword() {
+    usePageTitle('Reset Password');
     const location = useLocation();
     const navigate = useNavigate();
     const emailFromState = location.state?.email || "";

@@ -18,8 +18,10 @@ import {
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Badge, Input, Modal, Loader } from '../../components/ui';
 import { getMedicines, deleteMedicine } from '../../services/medicineService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Medicines = () => {
+  usePageTitle('My Medicines');
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

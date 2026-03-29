@@ -23,6 +23,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { saveHealthLog, getTodayLog } from '../../services/healthLogService';
 import { getTodayMedicines } from '../../services/medicineService';
 import { logMedicine } from '../../services/logService';
+import usePageTitle from '../../hooks/usePageTitle';
 
 
 
@@ -567,6 +568,7 @@ function MedicineTimeline({ medicines, actionLoading, onLogMedicine }) {
 // DASHBOARD COMPONENT
 // ═══════════════════════════════════════════
 function Dashboard() {
+  usePageTitle('Dashboard');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
