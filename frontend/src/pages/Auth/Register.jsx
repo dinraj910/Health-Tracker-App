@@ -40,14 +40,18 @@ export default function Register() {
   useEffect(() => {
     const initGoogle = () => {
       if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-          callback: handleGoogleResponse,
-        });
+        if (!document.getElementById("gsi-init-register")) {
+          window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+          });
+          const marker = document.createElement("div");
+          marker.id = "gsi-init-register";
+          document.body.appendChild(marker);
+        }
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           theme: "filled_black",
           size: "large",
-          width: "100%",
           text: "signup_with",
           shape: "pill",
           logo_alignment: "center",

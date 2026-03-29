@@ -37,14 +37,18 @@ export default function Login() {
   useEffect(() => {
     const initGoogle = () => {
       if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-          callback: handleGoogleResponse,
-        });
+        if (!document.getElementById("gsi-init-login")) {
+          window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+          });
+          const marker = document.createElement("div");
+          marker.id = "gsi-init-login";
+          document.body.appendChild(marker);
+        }
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           theme: "filled_black",
           size: "large",
-          width: "100%",
           text: "signin_with",
           shape: "pill",
           logo_alignment: "center",
