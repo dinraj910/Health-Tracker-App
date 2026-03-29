@@ -1,6 +1,7 @@
 import Medicine from "../models/Medicine.js";
 import MedicineLog from "../models/MedicineLog.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
+import { clearUserCache } from "../middleware/cache.js";
 
 /**
  * @desc    Create new medicine
@@ -36,6 +37,9 @@ export const createMedicine = asyncHandler(async (req, res) => {
     color,
     remindersEnabled,
   });
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(201).json({
     success: true,
@@ -150,6 +154,9 @@ export const updateMedicine = asyncHandler(async (req, res) => {
     });
   }
 
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
+
   res.status(200).json({
     success: true,
     message: "Medicine updated successfully",
@@ -177,6 +184,9 @@ export const deleteMedicine = asyncHandler(async (req, res) => {
 
   // Also delete associated logs
   await MedicineLog.deleteMany({ medicineId: req.params.id });
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(200).json({
     success: true,
@@ -251,6 +261,9 @@ export const toggleMedicine = asyncHandler(async (req, res) => {
 
   medicine.isActive = !medicine.isActive;
   await medicine.save();
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(200).json({
     success: true,

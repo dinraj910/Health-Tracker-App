@@ -146,6 +146,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       // Cloudinary public ID for avatar deletion
     },
+    // ── Push Notifications ──
+    pushSubscription: {
+      type: Object,
+      default: null,
+      // Stores browser Web Push subscription: { endpoint, keys: { auth, p256dh } }
+    },
+
     isActive: {
       type: Boolean,
       default: true,

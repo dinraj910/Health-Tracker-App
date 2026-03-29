@@ -16,6 +16,7 @@ import {
   reportRoutes,
   drugRoutes,
   prescriptionRoutes,
+  notificationRoutes,
 } from "./routes/index.js";
 
 
@@ -106,6 +107,7 @@ app.use("/api/health-logs", healthLogRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/drugs", drugRoutes);
 app.use("/api/prescription", prescriptionRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ===========================================
 // ERROR HANDLING

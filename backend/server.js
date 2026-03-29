@@ -5,9 +5,13 @@ dotenv.config();
 
 const { default: app } = await import("./src/app.js");
 const { default: connectDB } = await import("./src/config/db.js");
+const { startReminderCron } = await import("./src/cron/reminderCron.js");
 
 // Connect to database
 connectDB();
+
+// Start background cron jobs
+startReminderCron();
 
 const PORT = process.env.PORT || 5000;
 

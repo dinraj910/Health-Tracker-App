@@ -1,5 +1,6 @@
 import HealthLog from "../models/HealthLog.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
+import { clearUserCache } from "../middleware/cache.js";
 
 /**
  * @desc    Create or update today's health log
@@ -27,6 +28,9 @@ export const createOrUpdateLog = asyncHandler(async (req, res) => {
         { $set: logData },
         { new: true, upsert: true, runValidators: true }
     );
+
+    // Invalidate caches
+    await clearUserCache(req.user._id, ["vitals", "wellness", "dashboard"]);
 
     res.status(200).json({
         success: true,
@@ -138,6 +142,9 @@ export const updateLog = asyncHandler(async (req, res) => {
         });
     }
 
+    // Invalidate caches
+    await clearUserCache(req.user._id, ["vitals", "wellness", "dashboard"]);
+
     res.status(200).json({
         success: true,
         message: "Health log updated successfully",
@@ -162,6 +169,9 @@ export const deleteLog = asyncHandler(async (req, res) => {
             message: "Health log not found",
         });
     }
+
+    // Invalidate caches
+    await clearUserCache(req.user._id, ["vitals", "wellness", "dashboard"]);
 
     res.status(200).json({
         success: true,

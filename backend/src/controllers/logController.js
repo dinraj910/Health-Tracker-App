@@ -1,6 +1,8 @@
 import MedicineLog from "../models/MedicineLog.js";
 import Medicine from "../models/Medicine.js";
+import Notification from "../models/Notification.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
+import { clearUserCache } from "../middleware/cache.js";
 
 /**
  * @desc    Log medicine as taken
@@ -54,6 +56,18 @@ export const takeMedicine = asyncHandler(async (req, res) => {
   }
 
   await log.populate("medicineId", "medicineName dosage category color");
+
+  // Create in-app notification
+  Notification.create({
+    userId: req.user._id,
+    type: "dose_taken",
+    title: "✅ Dose Taken",
+    body: `${medicine.medicineName} (${medicine.dosage}) marked as taken`,
+    metadata: { medicineId: medicine._id, medicineName: medicine.medicineName, dosage: medicine.dosage },
+  }).catch(() => {}); // fire-and-forget
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(200).json({
     success: true,
@@ -112,6 +126,18 @@ export const missMedicine = asyncHandler(async (req, res) => {
   }
 
   await log.populate("medicineId", "medicineName dosage category color");
+
+  // Create in-app notification
+  Notification.create({
+    userId: req.user._id,
+    type: log.status === "skipped" ? "dose_skipped" : "dose_missed",
+    title: log.status === "skipped" ? "⏭️ Dose Skipped" : "❌ Dose Missed",
+    body: `${medicine.medicineName} (${medicine.dosage}) marked as ${log.status}`,
+    metadata: { medicineId: medicine._id, medicineName: medicine.medicineName, dosage: medicine.dosage },
+  }).catch(() => {}); // fire-and-forget
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(200).json({
     success: true,
@@ -245,6 +271,9 @@ export const updateLog = asyncHandler(async (req, res) => {
   await log.save();
   await log.populate("medicineId", "medicineName dosage category color");
 
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
+
   res.status(200).json({
     success: true,
     message: "Log updated successfully",
@@ -269,6 +298,9 @@ export const deleteLog = asyncHandler(async (req, res) => {
       message: "Log not found",
     });
   }
+
+  // Invalidate caches
+  await clearUserCache(req.user._id, ["weekly", "adherence", "medicines", "dashboard"]);
 
   res.status(200).json({
     success: true,

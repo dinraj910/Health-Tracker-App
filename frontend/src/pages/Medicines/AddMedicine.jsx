@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -9,33 +9,78 @@ import {
   Plus,
   X,
   Save,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { Button, Card, Input, Badge } from '../../components/ui';
 import { useToast } from '../../hooks/useToast';
-import { createMedicine } from '../../services/medicineService';
+import { createMedicine, getMedicine, updateMedicine } from '../../services/medicineService';
+
+const EMPTY_FORM = {
+  medicineName: '',
+  dosage: '',
+  frequency: 'once-daily',
+  timings: [],
+  startDate: '',
+  endDate: '',
+  instructions: '',
+  prescribedBy: '',
+  category: 'tablet',
+  remindersEnabled: true
+};
+
+const formatDateForInput = (dateStr) => {
+  if (!dateStr) return '';
+  return new Date(dateStr).toISOString().split('T')[0];
+};
 
 const AddMedicine = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // present when editing
+  const isEditMode = Boolean(id);
+
   const [loading, setLoading] = useState(false);
+  const [fetchingMedicine, setFetchingMedicine] = useState(isEditMode);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    medicineName: '',
-    dosage: '',
-    frequency: 'once-daily',
-    timings: [],
-    startDate: '',
-    endDate: '',
-    instructions: '',
-    prescribedBy: '',
-    category: 'tablet',
-    remindersEnabled: true
-  });
-
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [newTiming, setNewTiming] = useState('');
   const [errors, setErrors] = useState({});
+
+  // Load existing medicine data when in edit mode
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const loadMedicine = async () => {
+      try {
+        setFetchingMedicine(true);
+        const res = await getMedicine(id);
+        const med = res?.data?.medicine || res?.medicine;
+        if (!med) throw new Error('Medicine not found');
+
+        setFormData({
+          medicineName: med.medicineName || '',
+          dosage: med.dosage || '',
+          frequency: med.frequency || 'once-daily',
+          timings: med.timings || [],
+          startDate: formatDateForInput(med.startDate),
+          endDate: formatDateForInput(med.endDate),
+          instructions: med.instructions || '',
+          prescribedBy: med.prescribedBy || '',
+          category: med.category || 'tablet',
+          remindersEnabled: med.remindersEnabled ?? true,
+        });
+      } catch (err) {
+        toast.error('Failed to load medicine details');
+        navigate('/medicines');
+      } finally {
+        setFetchingMedicine(false);
+      }
+    };
+
+    loadMedicine();
+  }, [id, isEditMode, navigate, toast]);
 
   const frequencyOptions = [
     { value: 'once-daily', label: 'Once Daily' },
@@ -53,8 +98,6 @@ const AddMedicine = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -87,61 +130,64 @@ const AddMedicine = () => {
 
   const validate = () => {
     const newErrors = {};
-
-    if (!formData.medicineName.trim()) {
-      newErrors.medicineName = 'Medicine name is required';
-    }
-
-    if (!formData.dosage.trim()) {
-      newErrors.dosage = 'Dosage is required';
-    }
-
-    if (formData.timings.length === 0) {
-      newErrors.timings = 'At least one timing is required';
-    }
-
-    if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
-    }
-
+    if (!formData.medicineName.trim()) newErrors.medicineName = 'Medicine name is required';
+    if (!formData.dosage.trim()) newErrors.dosage = 'Dosage is required';
+    if (formData.timings.length === 0) newErrors.timings = 'At least one timing is required';
+    if (!formData.startDate) newErrors.startDate = 'Start date is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validate()) return;
+
+    const payload = {
+      medicineName: formData.medicineName,
+      dosage: formData.dosage,
+      frequency: formData.frequency,
+      timings: formData.timings,
+      startDate: formData.startDate,
+      endDate: formData.endDate || undefined,
+      instructions: formData.instructions || undefined,
+      prescribedBy: formData.prescribedBy || undefined,
+      category: formData.category,
+      remindersEnabled: formData.remindersEnabled
+    };
 
     try {
       setLoading(true);
-
-      await createMedicine({
-        medicineName: formData.medicineName,
-        dosage: formData.dosage,
-        frequency: formData.frequency,
-        timings: formData.timings,
-        startDate: formData.startDate,
-        endDate: formData.endDate || undefined,
-        instructions: formData.instructions || undefined,
-        prescribedBy: formData.prescribedBy || undefined,
-        category: formData.category,
-        remindersEnabled: formData.remindersEnabled
-      });
-
-      toast.success('Medicine added successfully!');
+      if (isEditMode) {
+        await updateMedicine(id, payload);
+        toast.success('Medicine updated successfully!');
+      } else {
+        await createMedicine(payload);
+        toast.success('Medicine added successfully!');
+      }
       navigate('/medicines');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to add medicine. Please try again.');
+      toast.error(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'add'} medicine.`);
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetchingMedicine) {
+    return (
+      <DashboardLayout title="Edit Medicine">
+        <div className="flex items-center justify-center py-24">
+          <div className="flex flex-col items-center gap-3 text-slate-400">
+            <Loader2 size={32} className="animate-spin text-teal-400" />
+            <p className="text-sm">Loading medicine details...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <DashboardLayout title="Add Medicine">
+    <DashboardLayout title={isEditMode ? 'Edit Medicine' : 'Add Medicine'}>
       <div className="max-w-2xl mx-auto">
-        {/* Back Button */}
         <Link to="/medicines" className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors">
           <ArrowLeft size={20} />
           <span>Back to Medicines</span>
@@ -154,15 +200,15 @@ const AddMedicine = () => {
                 <Pill size={24} className="text-teal-400" />
               </div>
               <div>
-                <Card.Title>Add New Medicine</Card.Title>
-                <Card.Description>Enter the details of your medicine</Card.Description>
+                <Card.Title>{isEditMode ? 'Edit Medicine' : 'Add New Medicine'}</Card.Title>
+                <Card.Description>
+                  {isEditMode ? 'Update the details of your medicine' : 'Enter the details of your medicine'}
+                </Card.Description>
               </div>
             </div>
           </Card.Header>
 
           <Card.Content>
-
-
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Medicine Name */}
               <Input
@@ -189,19 +235,18 @@ const AddMedicine = () => {
 
               {/* Frequency */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-200">
-                  Frequency
-                </label>
+                <label className="block text-sm font-medium text-slate-200">Frequency</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {frequencyOptions.map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, frequency: option.value }))}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${formData.frequency === option.value
-                        ? 'bg-teal-500 text-white'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
-                        }`}
+                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        formData.frequency === option.value
+                          ? 'bg-teal-500 text-white'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                      }`}
                     >
                       {option.label}
                     </button>
@@ -215,7 +260,6 @@ const AddMedicine = () => {
                   Timings <span className="text-red-400">*</span>
                 </label>
 
-                {/* Quick Select */}
                 <div className="flex flex-wrap gap-2">
                   {commonTimings.map((time) => (
                     <button
@@ -223,17 +267,17 @@ const AddMedicine = () => {
                       type="button"
                       onClick={() => addTiming(time)}
                       disabled={formData.timings.includes(time)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${formData.timings.includes(time)
-                        ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
-                        }`}
+                      className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                        formData.timings.includes(time)
+                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                      }`}
                     >
                       {formatTime(time)}
                     </button>
                   ))}
                 </div>
 
-                {/* Custom Time Input */}
                 <div className="flex gap-2">
                   <Input
                     type="time"
@@ -253,7 +297,6 @@ const AddMedicine = () => {
                   </Button>
                 </div>
 
-                {/* Selected Timings */}
                 {formData.timings.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {formData.timings.map((time) => (
@@ -300,7 +343,16 @@ const AddMedicine = () => {
                 />
               </div>
 
-              {/* Notes */}
+              {/* Prescribed By */}
+              <Input
+                label="Prescribed By (Optional)"
+                name="prescribedBy"
+                placeholder="e.g., Dr. Sharma"
+                value={formData.prescribedBy}
+                onChange={handleChange}
+              />
+
+              {/* Instructions */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-slate-200">
                   Instructions (Optional)
@@ -348,7 +400,7 @@ const AddMedicine = () => {
                   leftIcon={<Save size={18} />}
                   className="flex-1"
                 >
-                  Save Medicine
+                  {isEditMode ? 'Update Medicine' : 'Save Medicine'}
                 </Button>
               </div>
             </form>

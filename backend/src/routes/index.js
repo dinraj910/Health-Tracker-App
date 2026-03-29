@@ -9,3 +9,4 @@ export { default as healthLogRoutes } from "./healthLogRoutes.js";
 export { default as reportRoutes } from "./reportRoutes.js";
 export { default as drugRoutes } from "./drugRoutes.js";
 export { default as prescriptionRoutes } from "./prescriptionRoutes.js";
+export { default as notificationRoutes } from "./notificationRoutes.js";

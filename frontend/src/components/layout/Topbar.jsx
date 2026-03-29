@@ -9,7 +9,6 @@ import {
   User,
   LogOut,
   Moon,
-  Sun,
   ChevronDown,
   Command,
   Pill,
@@ -19,25 +18,27 @@ import {
   Calendar,
   Shield,
   Lock,
-  Heart,
   Check,
   X,
   ArrowRight,
   Clock,
-  Hash,
   Sparkles,
-  Home
+  Home,
+  BellOff,
+  Trash2,
+  BellRing,
+  CheckCheck,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
-import Badge from '../ui/Badge';
+import { useNotifications } from '../../hooks/useNotifications';
 
 // Search-navigable pages
 const SEARCHABLE_PAGES = [
   { name: 'Dashboard', href: '/dashboard', icon: Home, category: 'Pages' },
   { name: 'My Medicines', href: '/medicines', icon: Pill, category: 'Pages' },
   { name: 'Add Medicine', href: '/medicines/add', icon: Pill, category: 'Pages' },
-  { name: 'Today\'s Doses', href: '/today', icon: Activity, category: 'Pages' },
+  { name: "Today's Doses", href: '/today', icon: Activity, category: 'Pages' },
   { name: 'Medical Records', href: '/records', icon: FileText, category: 'Pages' },
   { name: 'Health History', href: '/history', icon: Calendar, category: 'Pages' },
   { name: 'Analytics', href: '/analytics', icon: BarChart3, category: 'Pages' },
@@ -46,12 +47,27 @@ const SEARCHABLE_PAGES = [
   { name: 'Security Settings', href: '/profile', icon: Shield, category: 'Settings' },
 ];
 
-const Topbar = ({
-  onMenuClick,
-  user,
-  onLogout,
-  className
-}) => {
+const NOTIF_ICONS = {
+  medicine_reminder: { icon: Bell, color: 'text-violet-400', bg: 'bg-violet-500/10' },
+  dose_taken: { icon: Check, color: 'text-green-400', bg: 'bg-green-500/10' },
+  dose_missed: { icon: X, color: 'text-red-400', bg: 'bg-red-500/10' },
+  dose_skipped: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+  medicine_added: { icon: Pill, color: 'text-teal-400', bg: 'bg-teal-500/10' },
+  system: { icon: Sparkles, color: 'text-sky-400', bg: 'bg-sky-500/10' },
+};
+
+const formatRelativeTime = (dateStr) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
+
+const Topbar = ({ onMenuClick, user, onLogout, className }) => {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -59,13 +75,20 @@ const Topbar = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [notifications] = useState(3);
   const profileRef = useRef(null);
   const settingsRef = useRef(null);
   const notificationsRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // Get greeting based on time
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllRead,
+    deleteNotification,
+    enablePushNotifications,
+  } = useNotifications();
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -73,17 +96,15 @@ const Topbar = ({
     return 'Good Evening';
   };
 
-  // Filter search results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return SEARCHABLE_PAGES.slice(0, 6);
     const q = searchQuery.toLowerCase();
-    return SEARCHABLE_PAGES.filter(p =>
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+    return SEARCHABLE_PAGES.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
     );
   }, [searchQuery]);
 
-  // Keyboard shortcut: Ctrl+K to open search
+  // Ctrl+K shortcut
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -101,16 +122,15 @@ const Topbar = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handle arrow keys & enter in search
   useEffect(() => {
     if (!isSearchOpen) return;
     const handleKeyNav = (e) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, searchResults.length - 1));
+        setSelectedIndex((prev) => Math.min(prev + 1, searchResults.length - 1));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedIndex(prev => Math.max(prev - 1, 0));
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.key === 'Enter' && searchResults[selectedIndex]) {
         e.preventDefault();
         navigate(searchResults[selectedIndex].href);
@@ -123,18 +143,14 @@ const Topbar = ({
     return () => document.removeEventListener('keydown', handleKeyNav);
   }, [isSearchOpen, searchResults, selectedIndex, navigate]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (profileRef.current && !profileRef.current.contains(event.target))
         setIsProfileOpen(false);
-      }
-      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target))
         setIsSettingsOpen(false);
-      }
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target))
         setIsNotificationsOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -147,16 +163,23 @@ const Topbar = ({
     setSelectedIndex(0);
   };
 
+  const handleNotifClick = async (notif) => {
+    if (!notif.isRead) await markAsRead(notif._id);
+    setIsNotificationsOpen(false);
+    navigate('/today');
+  };
+
   return (
     <>
-      <header className={cn(
-        'sticky top-0 z-30 w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-700/80',
-        className
-      )}>
+      <header
+        className={cn(
+          'sticky top-0 z-30 w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-700/80',
+          className
+        )}
+      >
         <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
-          {/* Left Section */}
+          {/* Left */}
           <div className="flex items-center gap-4">
-            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -165,8 +188,6 @@ const Topbar = ({
             >
               <Menu size={20} />
             </Button>
-
-            {/* Greeting & Date */}
             <div className="hidden lg:block">
               <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
                 <Sparkles size={14} className="text-teal-400" />
@@ -176,13 +197,13 @@ const Topbar = ({
                 {new Date().toLocaleDateString('en-US', {
                   weekday: 'long',
                   month: 'long',
-                  day: 'numeric'
+                  day: 'numeric',
                 })}
               </p>
             </div>
           </div>
 
-          {/* Center Section - Search Trigger */}
+          {/* Center - Search */}
           <div className="flex-1 max-w-lg mx-4 md:mx-8">
             <button
               onClick={() => {
@@ -205,13 +226,14 @@ const Topbar = ({
             </button>
           </div>
 
-          {/* Right Section */}
+          {/* Right */}
           <div className="flex items-center gap-2 md:gap-3">
             {/* Notifications */}
             <div className="relative" ref={notificationsRef}>
               <Button
                 variant="ghost"
                 size="icon"
+                id="notifications-bell-btn"
                 onClick={() => {
                   setIsNotificationsOpen(!isNotificationsOpen);
                   setIsProfileOpen(false);
@@ -223,9 +245,9 @@ const Topbar = ({
                 )}
               >
                 <Bell size={20} />
-                {notifications > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-[10px] font-bold flex items-center justify-center bg-red-500 text-white rounded-full ring-2 ring-slate-900 animate-pulse">
-                    {notifications}
+                    {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </Button>
@@ -239,33 +261,108 @@ const Topbar = ({
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 mt-2 w-80 bg-slate-800/95 backdrop-blur-xl border border-slate-600/70 rounded-2xl shadow-2xl shadow-black/40 py-2 z-50 overflow-hidden"
                   >
+                    {/* Dropdown Header */}
                     <div className="px-4 py-3 border-b border-slate-700/70 flex items-center justify-between">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Notifications</p>
-                      <span className="text-[10px] font-medium text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">3 New</span>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                          Notifications
+                        </p>
+                        {unreadCount > 0 && (
+                          <span className="text-[10px] font-medium text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
+                            {unreadCount} New
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllRead}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-teal-400 hover:bg-slate-700/50 transition-all"
+                            title="Mark all as read"
+                          >
+                            <CheckCheck size={14} />
+                          </button>
+                        )}
+                        {'Notification' in window && Notification.permission !== 'granted' && (
+                          <button
+                            onClick={enablePushNotifications}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-700/50 transition-all"
+                            title="Enable push notifications"
+                          >
+                            <BellRing size={14} />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
+                    {/* Notification Items */}
                     <div className="max-h-[300px] overflow-y-auto">
-                      {[
-                        { id: 1, title: 'Medicine Reminder', desc: 'Time to take Metformin (500mg)', time: '10 min ago', status: 'due', icon: Pill, color: 'text-violet-400', bg: 'bg-violet-500/10' },
-                        { id: 2, title: 'Dose Taken', desc: 'Aspirin marked as taken', time: '1 hour ago', status: 'done', icon: Check, color: 'text-green-400', bg: 'bg-green-500/10' },
-                        { id: 3, title: 'Missed Dose', desc: 'Vitamin D3 was skipped', time: '4 hours ago', status: 'missed', icon: X, color: 'text-red-400', bg: 'bg-red-500/10' },
-                      ].map((notif) => (
-                        <button
-                          key={notif.id}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-700/40 transition-colors flex gap-3 group border-b border-slate-700/50 last:border-0"
-                        >
-                          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', notif.bg)}>
-                            <notif.icon size={18} className={notif.color} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-white group-hover:text-teal-300 transition-colors">{notif.title}</p>
-                            <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{notif.desc}</p>
-                            <span className="text-[10px] text-slate-500 mt-1 block font-medium">{notif.time}</span>
-                          </div>
-                        </button>
-                      ))}
+                      {notifications.length === 0 ? (
+                        <div className="py-8 text-center">
+                          <BellOff size={28} className="text-slate-700 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No notifications yet</p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Medicine reminders will appear here
+                          </p>
+                        </div>
+                      ) : (
+                        notifications.map((notif) => {
+                          const config = NOTIF_ICONS[notif.type] || NOTIF_ICONS.system;
+                          const Icon = config.icon;
+                          return (
+                            <div
+                              key={notif._id}
+                              className={cn(
+                                'flex gap-3 px-4 py-3 border-b border-slate-700/50 last:border-0 group transition-colors',
+                                !notif.isRead ? 'bg-slate-700/20' : 'hover:bg-slate-700/10'
+                              )}
+                            >
+                              <button
+                                onClick={() => handleNotifClick(notif)}
+                                className="flex items-start gap-3 flex-1 text-left min-w-0"
+                              >
+                                <div
+                                  className={cn(
+                                    'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5',
+                                    config.bg
+                                  )}
+                                >
+                                  <Icon size={16} className={config.color} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p
+                                    className={cn(
+                                      'text-sm font-semibold leading-tight',
+                                      notif.isRead ? 'text-slate-400' : 'text-white'
+                                    )}
+                                  >
+                                    {notif.title}
+                                  </p>
+                                  <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
+                                    {notif.body}
+                                  </p>
+                                  <span className="text-[10px] text-slate-500 mt-1 block">
+                                    {formatRelativeTime(notif.createdAt)}
+                                  </span>
+                                </div>
+                                {!notif.isRead && (
+                                  <span className="w-2 h-2 bg-teal-400 rounded-full shrink-0 mt-2" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => deleteNotification(notif._id)}
+                                className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0 self-start mt-1"
+                                title="Delete notification"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
 
+                    {/* Footer */}
                     <div className="px-2 pt-1">
                       <button
                         onClick={() => {
@@ -282,7 +379,7 @@ const Topbar = ({
               </AnimatePresence>
             </div>
 
-            {/* Settings Dropdown */}
+            {/* Settings */}
             <div className="relative hidden md:block" ref={settingsRef}>
               <Button
                 variant="ghost"
@@ -296,10 +393,10 @@ const Topbar = ({
                   isSettingsOpen && 'text-teal-400 bg-slate-800'
                 )}
               >
-                <Settings size={20} className={cn(
-                  'transition-transform duration-500',
-                  isSettingsOpen && 'rotate-90'
-                )} />
+                <Settings
+                  size={20}
+                  className={cn('transition-transform duration-500', isSettingsOpen && 'rotate-90')}
+                />
               </Button>
 
               <AnimatePresence>
@@ -312,15 +409,13 @@ const Topbar = ({
                     className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-xl border border-slate-600/70 rounded-2xl shadow-2xl shadow-black/40 py-2 z-50 overflow-hidden"
                   >
                     <div className="px-4 py-2 border-b border-slate-700/70">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Settings</p>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Settings
+                      </p>
                     </div>
-
                     <div className="py-1">
                       <button
-                        onClick={() => {
-                          navigate('/profile');
-                          setIsSettingsOpen(false);
-                        }}
+                        onClick={() => { navigate('/profile'); setIsSettingsOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-teal-500/10 transition-all duration-200 group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-teal-500/15 flex items-center justify-center group-hover:bg-teal-500/25 transition-colors">
@@ -331,12 +426,8 @@ const Topbar = ({
                           <p className="text-[10px] text-slate-500">Edit your details</p>
                         </div>
                       </button>
-
                       <button
-                        onClick={() => {
-                          navigate('/profile');
-                          setIsSettingsOpen(false);
-                        }}
+                        onClick={() => { navigate('/profile'); setIsSettingsOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-all duration-200 group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center group-hover:bg-violet-500/25 transition-colors">
@@ -344,13 +435,10 @@ const Topbar = ({
                         </div>
                         <div className="text-left">
                           <p className="font-medium">Security</p>
-                          <p className="text-[10px] text-slate-500">Password & privacy</p>
+                          <p className="text-[10px] text-slate-500">Password &amp; privacy</p>
                         </div>
                       </button>
-
-                      <button
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-indigo-500/10 transition-all duration-200 group"
-                      >
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-indigo-500/10 transition-all duration-200 group">
                         <div className="w-8 h-8 rounded-lg bg-indigo-500/15 flex items-center justify-center group-hover:bg-indigo-500/25 transition-colors">
                           <Moon size={14} className="text-indigo-400" />
                         </div>
@@ -365,19 +453,15 @@ const Topbar = ({
               </AnimatePresence>
             </div>
 
-            {/* Profile Dropdown */}
+            {/* Profile */}
             <div className="relative" ref={profileRef}>
               <button
-                onClick={() => {
-                  setIsProfileOpen(!isProfileOpen);
-                  setIsSettingsOpen(false);
-                }}
+                onClick={() => { setIsProfileOpen(!isProfileOpen); setIsSettingsOpen(false); }}
                 className={cn(
                   'flex items-center gap-2.5 px-2 md:px-3 py-1.5 rounded-xl transition-all duration-200 hover:bg-slate-800/80',
                   isProfileOpen && 'bg-slate-800/80'
                 )}
               >
-                {/* Avatar */}
                 <div className="relative">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 via-cyan-400 to-teal-500 flex items-center justify-center text-slate-900 font-bold text-sm shadow-lg shadow-teal-500/20">
                     {user?.avatar ? (
@@ -386,18 +470,14 @@ const Topbar = ({
                       user?.name?.charAt(0).toUpperCase() || 'U'
                     )}
                   </div>
-                  {/* Online indicator */}
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-slate-900" />
                 </div>
-
-                {/* Name (hidden on mobile) */}
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-semibold text-white truncate max-w-24 leading-tight">
                     {user?.name?.split(' ')[0] || 'User'}
                   </p>
                   <p className="text-[10px] text-slate-400 leading-tight">Online</p>
                 </div>
-
                 <ChevronDown
                   size={14}
                   className={cn(
@@ -407,7 +487,6 @@ const Topbar = ({
                 />
               </button>
 
-              {/* Dropdown Menu */}
               <AnimatePresence>
                 {isProfileOpen && (
                   <motion.div
@@ -417,7 +496,6 @@ const Topbar = ({
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 mt-2 w-64 bg-slate-800/95 backdrop-blur-xl border border-slate-600/70 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
                   >
-                    {/* User Info Header */}
                     <div className="px-4 py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/5 border-b border-slate-700/70">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 via-cyan-400 to-teal-500 flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg shadow-teal-500/25">
@@ -428,12 +506,8 @@ const Topbar = ({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-white truncate">
-                            {user?.name || 'User'}
-                          </p>
-                          <p className="text-xs text-slate-400 truncate">
-                            {user?.email || 'user@example.com'}
-                          </p>
+                          <p className="text-sm font-bold text-white truncate">{user?.name || 'User'}</p>
+                          <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
                             <span className="text-[10px] text-green-400 font-medium">Active</span>
@@ -441,14 +515,9 @@ const Topbar = ({
                         </div>
                       </div>
                     </div>
-
-                    {/* Menu Items */}
                     <div className="py-2">
                       <button
-                        onClick={() => {
-                          navigate('/profile');
-                          setIsProfileOpen(false);
-                        }}
+                        onClick={() => { navigate('/profile'); setIsProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-teal-500/10 transition-all duration-200 group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-teal-500/20 transition-colors">
@@ -457,12 +526,8 @@ const Topbar = ({
                         <span>View Profile</span>
                         <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all" />
                       </button>
-
                       <button
-                        onClick={() => {
-                          navigate('/profile');
-                          setIsProfileOpen(false);
-                        }}
+                        onClick={() => { navigate('/profile'); setIsProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-all duration-200 group md:hidden"
                       >
                         <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
@@ -471,12 +536,8 @@ const Topbar = ({
                         <span>Settings</span>
                         <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all" />
                       </button>
-
                       <button
-                        onClick={() => {
-                          navigate('/analytics');
-                          setIsProfileOpen(false);
-                        }}
+                        onClick={() => { navigate('/analytics'); setIsProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-sky-500/10 transition-all duration-200 group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-sky-500/20 transition-colors">
@@ -486,14 +547,9 @@ const Topbar = ({
                         <ArrowRight size={14} className="ml-auto text-slate-600 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
                       </button>
                     </div>
-
-                    {/* Logout */}
                     <div className="border-t border-slate-700/70 p-2">
                       <button
-                        onClick={() => {
-                          onLogout();
-                          setIsProfileOpen(false);
-                        }}
+                        onClick={() => { onLogout(); setIsProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all duration-200 group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
@@ -510,7 +566,7 @@ const Topbar = ({
         </div>
       </header>
 
-      {/* === Command Palette / Search Modal === */}
+      {/* Search Modal */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div
@@ -519,41 +575,30 @@ const Topbar = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-start justify-center pt-[15vh]"
-            onClick={() => {
-              setIsSearchOpen(false);
-              setSearchQuery('');
-              setSelectedIndex(0);
-            }}
+            onClick={() => { setIsSearchOpen(false); setSearchQuery(''); setSelectedIndex(0); }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.2 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
             >
-              {/* Search Input */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/80">
                 <Search size={18} className="text-teal-400 shrink-0" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setSelectedIndex(0);
-                  }}
+                  onChange={(e) => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
                   placeholder="Search pages, medicines, settings..."
                   className="flex-1 bg-transparent text-white text-sm placeholder:text-slate-500 outline-none"
                   autoFocus
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedIndex(0);
-                    }}
+                    onClick={() => { setSearchQuery(''); setSelectedIndex(0); }}
                     className="text-slate-500 hover:text-slate-300 transition-colors"
                   >
                     <X size={16} />
@@ -564,13 +609,11 @@ const Topbar = ({
                 </kbd>
               </div>
 
-              {/* Search Results */}
               <div className="max-h-80 overflow-y-auto p-2">
                 {searchResults.length > 0 ? (
                   <>
-                    {/* Group by category */}
-                    {['Pages', 'Settings'].map(category => {
-                      const items = searchResults.filter(r => r.category === category);
+                    {['Pages', 'Settings'].map((category) => {
+                      const items = searchResults.filter((r) => r.category === category);
                       if (items.length === 0) return null;
                       return (
                         <div key={category} className="mb-2">
@@ -593,10 +636,12 @@ const Topbar = ({
                                     : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                                 )}
                               >
-                                <div className={cn(
-                                  'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
-                                  isSelected ? 'bg-teal-500/20' : 'bg-slate-800'
-                                )}>
+                                <div
+                                  className={cn(
+                                    'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+                                    isSelected ? 'bg-teal-500/20' : 'bg-slate-800'
+                                  )}
+                                >
                                   <Icon size={14} className={isSelected ? 'text-teal-400' : 'text-slate-500'} />
                                 </div>
                                 <span className="flex-1 text-left font-medium">{result.name}</span>
@@ -616,13 +661,12 @@ const Topbar = ({
                 ) : (
                   <div className="py-8 text-center">
                     <Search size={32} className="text-slate-700 mx-auto mb-2" />
-                    <p className="text-sm text-slate-500">No results found for "{searchQuery}"</p>
+                    <p className="text-sm text-slate-500">No results found for &quot;{searchQuery}&quot;</p>
                     <p className="text-xs text-slate-600 mt-1">Try searching for pages, medicines, or settings</p>
                   </div>
                 )}
               </div>
 
-              {/* Footer */}
               <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-700/80 bg-slate-900/50">
                 <div className="flex items-center gap-3 text-[10px] text-slate-500">
                   <span className="flex items-center gap-1">
