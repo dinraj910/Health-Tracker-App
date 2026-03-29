@@ -76,6 +76,7 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchNotifications().finally(() => setLoading(false));
 

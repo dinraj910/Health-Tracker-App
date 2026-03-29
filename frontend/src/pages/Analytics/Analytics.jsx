@@ -48,6 +48,7 @@ const Delta = ({ curr, prev, invert = false }) => {
 };
 
 // ── Vital Card ────────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const VitalCard = ({ icon: Icon, iconColor, iconBg, title, value, unit, spark, sparkColor, status, statusColor }) => (
   <Card variant="glass" className="p-4 flex flex-col justify-between hover:bg-slate-800/60 transition-colors">
     <div className="flex items-start justify-between mb-3">

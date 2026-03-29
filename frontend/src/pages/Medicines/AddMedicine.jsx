@@ -73,7 +73,7 @@ const AddMedicine = () => {
           category: med.category || 'tablet',
           remindersEnabled: med.remindersEnabled ?? true,
         });
-      } catch (err) {
+      } catch {
         toast.error('Failed to load medicine details');
         navigate('/medicines');
       } finally {

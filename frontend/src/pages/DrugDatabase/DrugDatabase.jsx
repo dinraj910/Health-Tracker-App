@@ -447,6 +447,7 @@ function DrugDatabase() {
 }
 
 // Detail Section Component
+// eslint-disable-next-line no-unused-vars
 function DetailSection({ icon: Icon, title, color, children }) {
   return (
     <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
